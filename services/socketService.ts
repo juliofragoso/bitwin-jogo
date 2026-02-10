@@ -38,6 +38,9 @@ class P2PSocketService {
 
     const peerId = `${this.ID_PREFIX}${roomId}`;
     
+    // Log hostName to avoid unused variable error and for debugging purposes
+    console.log(`Initializing host session for player: ${hostName} in room: ${roomId}`);
+
     return new Promise((resolve, reject) => {
         this.peer = new Peer(peerId);
 
@@ -53,7 +56,8 @@ class P2PSocketService {
 
         this.peer.on('error', (err) => {
             console.error('Peer error:', err);
-            // If ID is taken, we might want to handle it, but for now log it
+            // Reject the promise if initialization fails
+            reject(err);
         });
     });
   }
