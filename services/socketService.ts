@@ -1,5 +1,5 @@
 import mqtt from 'mqtt';
-import { SocketMessage, StartGamePayload, PlayerFinishedPayload, JoinPayload } from '../types';
+import { SocketMessage, StartGamePayload, PlayerFinishedPayload, JoinPayload, RematchPayload } from '../types';
 
 class MqttSocketService {
   private client: mqtt.MqttClient | null = null;
@@ -100,7 +100,7 @@ class MqttSocketService {
     });
   }
 
-  public async joinRoom(roomId: string, playerName: string): Promise<void> {
+  public async joinRoom(roomId: string, playerName: string, playerAvatar: string): Promise<void> {
     await this.connect();
     
     // Clear any existing retry interval
@@ -125,7 +125,7 @@ class MqttSocketService {
                 console.log('Sending JOIN request...');
                 this.sendMessage(roomId, {
                     type: 'JOIN',
-                    payload: { roomId, playerName } as JoinPayload
+                    payload: { roomId, playerName, playerAvatar } as JoinPayload
                 });
             };
 
@@ -161,9 +161,23 @@ class MqttSocketService {
     });
   }
 
-  public restartGame(roomId: string) {
+  public requestRematch(roomId: string, requesterName: string) {
       this.sendMessage(roomId, {
-          type: 'RESTART',
+          type: 'REMATCH_REQUEST',
+          payload: { roomId, requesterName } as RematchPayload
+      });
+  }
+
+  public acceptRematch(roomId: string) {
+      this.sendMessage(roomId, {
+          type: 'REMATCH_ACCEPTED',
+          payload: { roomId }
+      });
+  }
+
+  public declineRematch(roomId: string) {
+      this.sendMessage(roomId, {
+          type: 'REMATCH_DECLINED',
           payload: { roomId }
       });
   }

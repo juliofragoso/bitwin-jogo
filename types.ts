@@ -12,6 +12,8 @@ export interface GameConfig {
   roomId: string;
   hostName: string;
   joinerName: string;
+  hostAvatar: string;
+  joinerAvatar: string;
 }
 
 export interface GuessResult {
@@ -21,7 +23,7 @@ export interface GuessResult {
 
 export interface SocketMessage {
   senderId?: string; // ID to filter own messages
-  type: 'JOIN' | 'START_GAME' | 'PLAYER_FINISHED' | 'RESTART';
+  type: 'JOIN' | 'START_GAME' | 'PLAYER_FINISHED' | 'RESTART' | 'REMATCH_REQUEST' | 'REMATCH_ACCEPTED' | 'REMATCH_DECLINED';
   payload?: any;
 }
 
@@ -29,6 +31,7 @@ export interface SocketMessage {
 export interface JoinPayload {
   roomId: string;
   playerName: string;
+  playerAvatar: string;
 }
 
 export interface StartGamePayload {
@@ -37,9 +40,16 @@ export interface StartGamePayload {
   targetNumber: number;
   hostName: string;
   joinerName: string;
+  hostAvatar: string;
+  joinerAvatar: string;
 }
 
 export interface PlayerFinishedPayload {
   roomId: string;
   attempts: number;
+}
+
+export interface RematchPayload {
+  roomId: string;
+  requesterName: string;
 }

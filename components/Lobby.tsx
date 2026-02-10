@@ -3,38 +3,65 @@ import { Button } from './Button';
 import { socketService } from '../services/socketService';
 
 interface LobbyProps {
-  onCreateGame: (roomId: string, playerName: string) => void;
-  onJoinGame: (roomId: string, playerName: string) => void;
+  onCreateGame: (roomId: string, playerName: string, avatar: string) => void;
+  onJoinGame: (roomId: string, playerName: string, avatar: string) => void;
 }
+
+const AVATARS = ['🤖', '😍', '🔥', '😒', '🥱', '🥶', '👺', '👽', '💩'];
 
 export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
   const [playerName, setPlayerName] = useState('');
+  const [playerAvatar, setPlayerAvatar] = useState(AVATARS[0]);
+  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [joinCode, setJoinCode] = useState('');
   const [mode, setMode] = useState<'menu' | 'join' | 'create'>('menu');
 
   const handleCreate = () => {
     if (!playerName.trim()) return;
     const newCode = socketService.generateRoomId();
-    onCreateGame(newCode, playerName.trim().toUpperCase());
+    onCreateGame(newCode, playerName.trim().toUpperCase(), playerAvatar);
   };
 
   const handleJoin = () => {
     if (joinCode.length === 5 && playerName.trim()) {
-      onJoinGame(joinCode.toUpperCase(), playerName.trim().toUpperCase());
+      onJoinGame(joinCode.toUpperCase(), playerName.trim().toUpperCase(), playerAvatar);
     }
   };
 
   const NameInput = () => (
-    <div className="space-y-2 text-left w-full">
-      <label className="text-sm text-bitwin-primary font-bold ml-2">SEU NICKNAME</label>
-      <input
-        type="text"
-        value={playerName}
-        onChange={(e) => setPlayerName(e.target.value.slice(0, 15))}
-        placeholder="EX: GORBINAL"
-        className="w-full bg-bitwin-bg/50 border-2 border-white/20 focus:border-bitwin-primary text-white text-xl font-bold p-4 rounded-2xl outline-none transition-all placeholder-white/20 text-center"
-        autoFocus
-      />
+    <div className="space-y-2 text-left w-full relative">
+      <label className="text-sm text-bitwin-primary font-bold ml-2">SEU NICKNAME & AVATAR</label>
+      <div className="flex gap-2">
+          <input
+            type="text"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value.slice(0, 15))}
+            placeholder="EX: GORBINAL"
+            className="flex-1 bg-bitwin-bg/50 border-2 border-white/20 focus:border-bitwin-primary text-white text-xl font-bold p-4 rounded-2xl outline-none transition-all placeholder-white/20 text-center"
+            autoFocus
+          />
+          <button 
+            className="w-20 bg-bitwin-bg/50 border-2 border-white/20 hover:border-bitwin-primary rounded-2xl text-4xl flex items-center justify-center transition-all active:scale-95"
+            onClick={() => setShowAvatarSelector(!showAvatarSelector)}
+          >
+            {playerAvatar}
+          </button>
+      </div>
+
+      {showAvatarSelector && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-bitwin-bg border-4 border-bitwin-primary rounded-2xl p-4 shadow-2xl z-50 animate-pop-in grid grid-cols-5 gap-2">
+              {AVATARS.map(av => (
+                  <button
+                    key={av}
+                    onClick={() => { setPlayerAvatar(av); setShowAvatarSelector(false); }}
+                    className={`text-3xl p-2 rounded-xl hover:bg-white/10 transition-colors ${playerAvatar === av ? 'bg-white/20 ring-2 ring-bitwin-primary' : ''}`}
+                  >
+                      {av}
+                  </button>
+              ))}
+          </div>
+      )}
+
       <div className="text-right text-xs text-white/40">{playerName.length}/15</div>
     </div>
   );
@@ -128,7 +155,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
       </div>
       
       <div className="mt-8 text-white/10 text-xs font-bold font-mono">
-        v1.01
+        v1.06
       </div>
     </div>
   );
