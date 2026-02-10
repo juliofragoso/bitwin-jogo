@@ -9,7 +9,6 @@ class MqttSocketService {
   private myId: string = Math.random().toString(36).substring(2, 15);
   
   // Public EMQX Broker (Secure WebSocket)
-  // This is a free public broker, excellent for demos.
   private readonly BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
   
   private readonly TOPIC_PREFIX = 'bitwin-game-v1/';
@@ -62,7 +61,8 @@ class MqttSocketService {
         resolve();
       });
 
-      this.client.on('message', (topic, message) => {
+      // Fixed: renamed topic to _topic to avoid "unused variable" error
+      this.client.on('message', (_topic, message) => {
         try {
           const parsedMsg: SocketMessage = JSON.parse(message.toString());
           // Filter out messages sent by ourselves
@@ -77,7 +77,6 @@ class MqttSocketService {
 
       this.client.on('error', (err) => {
         console.error('MQTT Error:', err);
-        // Don't reject here if it's a reconnection attempt, but initial connection might need it
         if (!this.client?.connected) reject(err);
       });
     });
@@ -85,7 +84,6 @@ class MqttSocketService {
 
   // --- Actions ---
 
-  // In MQTT, Host and Joiner logic is similar: Connect -> Subscribe to Room Topic
   public async host(roomId: string, hostName: string): Promise<void> {
     await this.connect();
     
@@ -111,7 +109,6 @@ class MqttSocketService {
             console.log(`Joined/Subscribed to ${topic} as ${playerName}`);
             
             // Broadcast JOIN message to the topic
-            // The Host is listening to this topic
             this.sendMessage(roomId, {
                 type: 'JOIN',
                 payload: { roomId, playerName } as JoinPayload
