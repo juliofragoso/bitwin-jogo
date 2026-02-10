@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Lobby } from './components/Lobby';
 import { Game } from './components/Game';
 import { ResultScreen } from './components/ResultScreen';
-import { GameState, GameConfig, SocketMessage } from './types';
+import { GameState, GameConfig, SocketMessage, GameMode } from './types';
 import { socketService } from './services/socketService';
 
 export default function App() {
@@ -56,6 +56,21 @@ export default function App() {
              console.log('Host received JOIN, starting game...');
              const joinerName = msg.payload.playerName;
              const joinerAvatar = msg.payload.playerAvatar || '👽';
+             
+             // Host determines the game mode from the config if it exists (rematch) or from selection (not available here in rematch logic directly, but handled in initializeGame)
+             // However, for a fresh start, we need to know the mode. 
+             // IMPORTANT: In a rematch, we reuse the previous mode.
+             const mode = gameConfigRef.current?.gameMode || 'CLASSIC'; // Default to Classic if unknown, but usually passed via closure or state if fresh.
+             
+             // Actually, when Host creates the room, they selected a mode. We need to store that mode in a ref or state to use it here when someone joins.
+             // We'll trust that gameConfigRef has it if it's a rematch, but if it's the FIRST game, gameConfig is null.
+             // We need to store the "Pending Game Mode" chosen in Lobby.
+             // Since we don't have a separate state for "Hosted Mode", we can grab it from the component state if we are creating.
+             // But handleCreateGame sets up the room. We should save the mode there.
+             // Fix: We will check `gameConfigRef` for Rematch, but for new games we need the mode.
+             // Since `initializeGame` is called here, we need to pass the mode.
+             // We'll rely on a temporary storage or just the fact that `handleCreateGame` set something up? No, `handleCreateGame` just joins the socket channel.
+             // Let's modify `handleCreateGame` to store the chosen mode in a ref.
              initializeGame(currentRoomId, currentName, currentAvatar, joinerName, joinerAvatar);
           } else {
              console.log('Ignored JOIN because game is already in progress');
@@ -81,6 +96,7 @@ export default function App() {
                joinerName: msg.payload.joinerName,
                hostAvatar: msg.payload.hostAvatar,
                joinerAvatar: msg.payload.joinerAvatar,
+               gameMode: msg.payload.gameMode,
              });
              setGameState(GameState.PLAYING);
              setRoomId(msg.payload.roomId);
@@ -105,7 +121,7 @@ export default function App() {
               // If I am Host, I should start the game now.
               if (currentIsHost && gameConfigRef.current) {
                   const cfg = gameConfigRef.current;
-                  initializeGame(cfg.roomId, cfg.hostName, cfg.hostAvatar, cfg.joinerName, cfg.joinerAvatar);
+                  initializeGame(cfg.roomId, cfg.hostName, cfg.hostAvatar, cfg.joinerName, cfg.joinerAvatar, cfg.gameMode);
               }
           }
           break;
@@ -132,16 +148,23 @@ export default function App() {
     }
   }, [gameState, opponentAttempts]);
 
+  // Store the mode selected by Host during creation
+  const pendingGameModeRef = useRef<GameMode>('CLASSIC');
+
   // Host Logic: Create numbers and broadcast start
-  const initializeGame = (activeRoomId: string, hostName: string, hostAvatar: string, joinerName: string, joinerAvatar: string) => {
+  const initializeGame = (activeRoomId: string, hostName: string, hostAvatar: string, joinerName: string, joinerAvatar: string, specificMode?: GameMode) => {
     const minRange = Math.floor(Math.random() * 15) + 1;
     const maxRange = Math.floor(Math.random() * (110 - 90 + 1)) + 90;
     const targetNumber = Math.floor(Math.random() * (maxRange - minRange - 1)) + minRange + 1;
+    
+    // Use passed mode (Rematch) OR pending mode (First game)
+    const gameMode = specificMode || pendingGameModeRef.current;
 
     const config = { 
         minRange, maxRange, targetNumber, 
         hostName, joinerName,
-        hostAvatar, joinerAvatar 
+        hostAvatar, joinerAvatar,
+        gameMode 
     };
     
     // Broadcast START_GAME to everyone in the room (including self)
@@ -156,11 +179,12 @@ export default function App() {
     setRoomId(activeRoomId);
   };
 
-  const handleCreateGame = async (newCode: string, name: string, avatar: string) => {
+  const handleCreateGame = async (newCode: string, name: string, avatar: string, gameMode: GameMode) => {
     roomIdRef.current = newCode;
     isHostRef.current = true;
     myNameRef.current = name;
     myAvatarRef.current = avatar;
+    pendingGameModeRef.current = gameMode;
 
     setRoomId(newCode);
     setIsHost(true);
@@ -236,7 +260,7 @@ export default function App() {
   const handleAcceptRematch = () => {
       // If Host accepts, Host initializes game immediately
       if (isHost && gameConfig) {
-          initializeGame(gameConfig.roomId, gameConfig.hostName, gameConfig.hostAvatar, gameConfig.joinerName, gameConfig.joinerAvatar);
+          initializeGame(gameConfig.roomId, gameConfig.hostName, gameConfig.hostAvatar, gameConfig.joinerName, gameConfig.joinerAvatar, gameConfig.gameMode);
       } else {
           // If Joiner accepts, send Accepted msg so Host can start
           socketService.acceptRematch(roomId);
@@ -306,7 +330,7 @@ export default function App() {
                    </button>
                </div>
                <div className="mt-8 text-white/10 text-xs font-bold font-mono">
-                  v1.06
+                  v2.0
                </div>
             </div>
         )

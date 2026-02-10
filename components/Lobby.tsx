@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Button } from './Button';
 import { socketService } from '../services/socketService';
+import { GameMode } from '../types';
 
 interface LobbyProps {
-  onCreateGame: (roomId: string, playerName: string, avatar: string) => void;
+  onCreateGame: (roomId: string, playerName: string, avatar: string, gameMode: GameMode) => void;
   onJoinGame: (roomId: string, playerName: string, avatar: string) => void;
 }
 
@@ -15,11 +16,12 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [joinCode, setJoinCode] = useState('');
   const [mode, setMode] = useState<'menu' | 'join' | 'create'>('menu');
+  const [selectedGameMode, setSelectedGameMode] = useState<GameMode>('CLASSIC');
 
   const handleCreate = () => {
     if (!playerName.trim()) return;
     const newCode = socketService.generateRoomId();
-    onCreateGame(newCode, playerName.trim().toUpperCase(), playerAvatar);
+    onCreateGame(newCode, playerName.trim().toUpperCase(), playerAvatar, selectedGameMode);
   };
 
   const handleJoin = () => {
@@ -113,14 +115,38 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
           </div>
         )}
 
-        {/* Step 2: Create (Just confirmation, logic handles next) */}
+        {/* Step 2: Create (Mode Selection) */}
         {mode === 'create' && (
           <div className="space-y-6 animate-pop-in">
-             <div className="text-2xl font-bold mb-4">Olá, {playerName}!</div>
-             <p className="text-white/60">Vamos criar uma sala para você desafiar alguém.</p>
-             <Button onClick={handleCreate} variant="primary" size="lg" className="w-full">
-               INICIAR LOBBY
-             </Button>
+             <div className="text-2xl font-bold mb-2">Olá, {playerName}!</div>
+             <p className="text-white/60 mb-4">Escolha o modo de jogo:</p>
+             
+             <div className="grid grid-cols-2 gap-4">
+                 <button 
+                    onClick={() => setSelectedGameMode('CLASSIC')}
+                    className={`p-4 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-2 ${selectedGameMode === 'CLASSIC' ? 'bg-white/10 border-bitwin-primary scale-105 shadow-xl' : 'bg-black/20 border-white/10 opacity-60 hover:opacity-100'}`}
+                 >
+                     <div className="text-4xl">🛡️</div>
+                     <div className="font-bold text-sm">CLÁSSICO</div>
+                     <div className="text-[10px] text-white/50 leading-tight">Lógica pura. Sem poderes.</div>
+                 </button>
+
+                 <button 
+                    onClick={() => setSelectedGameMode('HACKER')}
+                    className={`p-4 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-2 ${selectedGameMode === 'HACKER' ? 'bg-white/10 border-bitwin-accent scale-105 shadow-xl' : 'bg-black/20 border-white/10 opacity-60 hover:opacity-100'}`}
+                 >
+                     <div className="text-4xl">⚡</div>
+                     <div className="font-bold text-sm">HACKER</div>
+                     <div className="text-[10px] text-white/50 leading-tight">Com poderes e caos! (Beta)</div>
+                 </button>
+             </div>
+
+             <div className="pt-4">
+                <Button onClick={handleCreate} variant="primary" size="lg" className="w-full">
+                INICIAR LOBBY
+                </Button>
+             </div>
+             
              <button onClick={() => setMode('menu')} className="text-white/40 font-bold text-sm mt-4 hover:text-white">VOLTAR</button>
           </div>
         )}
@@ -155,7 +181,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
       </div>
       
       <div className="mt-8 text-white/10 text-xs font-bold font-mono">
-        v1.06
+        v2.0
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import mqtt from 'mqtt';
-import { SocketMessage, StartGamePayload, PlayerFinishedPayload, JoinPayload, RematchPayload } from '../types';
+import { SocketMessage, StartGamePayload, PlayerFinishedPayload, JoinPayload, RematchPayload, PowerUpPayload } from '../types';
 
 class MqttSocketService {
   private client: mqtt.MqttClient | null = null;
@@ -73,7 +73,7 @@ class MqttSocketService {
           const parsedMsg: SocketMessage = JSON.parse(message.toString());
           // We filter out our own messages
           if (parsedMsg.senderId !== this.myId) {
-             console.log('Received:', parsedMsg.type, 'from', parsedMsg.senderId);
+             // console.log('Received:', parsedMsg.type, 'from', parsedMsg.senderId);
              this.notifyListeners(parsedMsg);
           }
         } catch (e) {
@@ -179,6 +179,13 @@ class MqttSocketService {
       this.sendMessage(roomId, {
           type: 'REMATCH_DECLINED',
           payload: { roomId }
+      });
+  }
+
+  public sendPowerUpEffect(roomId: string, effect: 'GLITCH' | 'FREEZE', duration: number) {
+      this.sendMessage(roomId, {
+          type: 'POWER_UP_EFFECT',
+          payload: { roomId, effect, duration } as PowerUpPayload
       });
   }
 

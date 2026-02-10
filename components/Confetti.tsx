@@ -36,7 +36,7 @@ export const Confetti: React.FC = () => {
       if (!ctx || !canvas) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      particles.forEach((p, index) => {
+      particles.forEach((p) => {
         p.y += p.speedY;
         p.x += p.speedX;
         p.rotation += p.rotationSpeed;

@@ -5,6 +5,21 @@ export enum GameState {
   GAME_OVER = 'GAME_OVER',
 }
 
+export type GameMode = 'CLASSIC' | 'HACKER';
+
+export enum PowerUpType {
+  BINARY_SCAN = 'BINARY_SCAN',
+  GLITCH_BOMB = 'GLITCH_BOMB',
+  DOUBLE_THREAD = 'DOUBLE_THREAD',
+  FREEZE_FRAME = 'FREEZE_FRAME',
+}
+
+export enum PassiveType {
+  FIREWALL = 'FIREWALL',
+  THERMAL_SENSOR = 'THERMAL_SENSOR',
+  OVERCLOCK = 'OVERCLOCK',
+}
+
 export interface GameConfig {
   minRange: number;
   maxRange: number;
@@ -14,16 +29,18 @@ export interface GameConfig {
   joinerName: string;
   hostAvatar: string;
   joinerAvatar: string;
+  gameMode: GameMode;
 }
 
 export interface GuessResult {
   value: number;
   direction: 'HIGHER' | 'LOWER' | 'CORRECT';
+  freeAttempt?: boolean; // For Overclock
 }
 
 export interface SocketMessage {
   senderId?: string; // ID to filter own messages
-  type: 'JOIN' | 'START_GAME' | 'PLAYER_FINISHED' | 'RESTART' | 'REMATCH_REQUEST' | 'REMATCH_ACCEPTED' | 'REMATCH_DECLINED';
+  type: 'JOIN' | 'START_GAME' | 'PLAYER_FINISHED' | 'RESTART' | 'REMATCH_REQUEST' | 'REMATCH_ACCEPTED' | 'REMATCH_DECLINED' | 'POWER_UP_EFFECT';
   payload?: any;
 }
 
@@ -42,6 +59,7 @@ export interface StartGamePayload {
   joinerName: string;
   hostAvatar: string;
   joinerAvatar: string;
+  gameMode: GameMode;
 }
 
 export interface PlayerFinishedPayload {
@@ -52,4 +70,10 @@ export interface PlayerFinishedPayload {
 export interface RematchPayload {
   roomId: string;
   requesterName: string;
+}
+
+export interface PowerUpPayload {
+  roomId: string;
+  effect: 'GLITCH' | 'FREEZE';
+  duration?: number;
 }

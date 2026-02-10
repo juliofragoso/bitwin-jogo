@@ -25,7 +25,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
   onDeclineRematch,
   onExit,
   incomingRematchFrom,
-  myPlayerName,
+  // myPlayerName is removed from destructuring to fix build error (unused)
   myAvatar,
   opponentAvatar
 }) => {
@@ -152,7 +152,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
       </div>
 
       <div className="mt-8 text-white/10 text-xs font-bold font-mono">
-        v1.06
+        v2.0
       </div>
     </div>
   );

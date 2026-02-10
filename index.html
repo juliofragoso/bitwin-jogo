@@ -64,6 +64,50 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #ffdb4d; 
       }
+
+      /* Power-up Effects */
+      @keyframes glitch-anim {
+        0% { transform: translate(0) }
+        20% { transform: translate(-2px, 2px) }
+        40% { transform: translate(-2px, -2px) }
+        60% { transform: translate(2px, 2px) }
+        80% { transform: translate(2px, -2px) }
+        100% { transform: translate(0) }
+      }
+
+      .glitch-effect {
+        animation: glitch-anim 0.2s infinite;
+        filter: hue-rotate(90deg) contrast(1.2);
+      }
+
+      .glitch-effect input {
+         transform: scaleY(-1); /* Upside down input */
+      }
+      
+      .glitch-effect .arrow-indicator {
+          transform: rotate(180deg); /* Wrong directions */
+      }
+
+      .freeze-effect {
+        position: relative;
+        overflow: hidden;
+      }
+      .freeze-effect::after {
+        content: "❄️ CONGELADO ❄️";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 200, 255, 0.4);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 0 0 10px blue;
+        z-index: 50;
+      }
+
     </style>
   <script type="importmap">
 {
