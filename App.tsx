@@ -18,6 +18,7 @@ export default function App() {
 
   // Status message for waiting room
   const [statusMessage, setStatusMessage] = useState<string>('');
+  const [isCopied, setIsCopied] = useState<boolean>(false);
 
   // Refs to handle race conditions in event listeners
   const roomIdRef = useRef('');
@@ -123,6 +124,7 @@ export default function App() {
     setIsHost(true);
     setMyPlayerName(name);
     setStatusMessage(`CRIANDO SALA...`);
+    setIsCopied(false);
     
     // Initialize Host Peer
     await socketService.host(newCode, name);
@@ -168,6 +170,7 @@ export default function App() {
       setMyAttempts(0);
       setOpponentAttempts(null);
       setStatusMessage('');
+      setIsCopied(false);
 
       if (fullDisconnect) {
         setRoomId('');
@@ -183,6 +186,12 @@ export default function App() {
       resetGame(false);
   }
 
+  const handleCopyCode = () => {
+      navigator.clipboard.writeText(roomId);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+  };
+
   // --- RENDER ---
 
   if (gameState === GameState.LOBBY) {
@@ -196,8 +205,20 @@ export default function App() {
                    </h2>
                    
                    {statusMessage.startsWith('CÓDIGO') ? (
-                       <div className="text-5xl font-black text-bitwin-primary my-6 bg-black/20 p-4 rounded-xl border-2 border-dashed border-white/20 select-all">
-                           {roomId}
+                       <div className="my-6">
+                           <div className="flex items-center justify-center gap-3">
+                               <div className="text-5xl font-black text-bitwin-primary bg-black/20 p-4 rounded-xl border-2 border-dashed border-white/20 select-all tracking-widest">
+                                   {roomId}
+                               </div>
+                               <button 
+                                   onClick={handleCopyCode}
+                                   className="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white p-4 rounded-xl transition-all border-2 border-white/10 flex items-center justify-center h-20 w-20 text-3xl"
+                                   title="Copiar código"
+                               >
+                                   {isCopied ? '✅' : '📋'}
+                               </button>
+                           </div>
+                           {isCopied && <p className="text-green-400 text-sm font-bold mt-2 animate-pulse">Código copiado!</p>}
                        </div>
                    ) : (
                        <div className="text-xl font-bold text-bitwin-primary my-6">

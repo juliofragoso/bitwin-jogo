@@ -127,8 +127,8 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
 
       </div>
       
-      <div className="mt-8 text-white/30 text-sm font-bold">
-        Nota: Abra em duas abas para jogar contra você mesmo!
+      <div className="mt-8 text-white/10 text-xs font-bold font-mono">
+        v1.01
       </div>
     </div>
   );
