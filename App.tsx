@@ -23,6 +23,12 @@ export default function App() {
   const roomIdRef = useRef('');
   const isHostRef = useRef(false);
   const myNameRef = useRef('');
+  const gameStateRef = useRef<GameState>(GameState.LOBBY);
+
+  // Update ref when state changes
+  useEffect(() => {
+    gameStateRef.current = gameState;
+  }, [gameState]);
 
   const handleSocketMessage = useCallback((msg: SocketMessage) => {
     const currentRoomId = roomIdRef.current;
@@ -34,11 +40,18 @@ export default function App() {
     switch (msg.type) {
       case 'JOIN':
         // Host receives JOIN from Joiner
-        // Removed `gameState === LOBBY` check to be safer against state batching issues
+        // ONLY accept JOIN if we are currently in LOBBY (prevents resetting game on retry-packets)
         if (currentIsHost && msg.payload.roomId === currentRoomId) {
-          console.log('Host received JOIN, starting game...');
-          const joinerName = msg.payload.playerName;
-          initializeGame(currentRoomId, currentName, joinerName);
+          if (gameStateRef.current === GameState.LOBBY || gameStateRef.current === GameState.GAME_OVER) {
+             console.log('Host received JOIN, starting game...');
+             const joinerName = msg.payload.playerName;
+             initializeGame(currentRoomId, currentName, joinerName);
+          } else {
+             // If we are already playing, we should probably re-send the START_GAME config 
+             // in case the joiner missed it (Handshake Ack), but for now, let's just ignore to prevent reset.
+             // Ideally, we would cache the config and resend it here.
+             console.log('Ignored JOIN because game is already in progress');
+          }
         }
         break;
 
@@ -71,7 +84,7 @@ export default function App() {
         }
         break;
     }
-  }, []); // Removed gameState dependency to prevent stale closure issues
+  }, []); 
 
   useEffect(() => {
     const unsubscribe = socketService.subscribe(handleSocketMessage);
@@ -128,7 +141,7 @@ export default function App() {
     
     try {
         await socketService.joinRoom(code, name);
-        // If we reach here, we subscribed. The JOIN message is sent after a 1s delay in socketService
+        // The service now handles the retry loop for JOIN
         setStatusMessage('AGUARDANDO O HOST INICIAR...');
     } catch (e) {
         console.error(e);
@@ -196,6 +209,10 @@ export default function App() {
                        <p className="text-white/50 text-sm">Compartilhe o código acima para jogar.</p>
                    )}
                    
+                   {statusMessage === 'AGUARDANDO O HOST INICIAR...' && (
+                        <p className="text-bitwin-accent text-xs mt-2 animate-pulse">Enviando sinal para o host...</p>
+                   )}
+
                    <button onClick={() => resetGame(true)} className="mt-8 text-red-400 font-bold underline hover:text-red-300">
                        CANCELAR
                    </button>

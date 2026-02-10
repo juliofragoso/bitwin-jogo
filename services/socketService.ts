@@ -5,13 +5,14 @@ class MqttSocketService {
   private client: mqtt.MqttClient | null = null;
   private listeners: ((message: SocketMessage) => void)[] = [];
   
-  // Unique ID for this session to ignore our own messages
   private myId: string = Math.random().toString(36).substring(2, 15);
   
-  // Public EMQX Broker (Secure WebSocket)
+  // Using EMQX public broker
   private readonly BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
-  
   private readonly TOPIC_PREFIX = 'bitwin-game-v1/';
+
+  // Interval to retry joining until accepted
+  private joinInterval: any = null;
 
   constructor() {
     console.log('Socket Service Initialized with ID:', this.myId);
@@ -25,7 +26,18 @@ class MqttSocketService {
   }
 
   private notifyListeners(message: SocketMessage) {
+    // If we receive a START_GAME, we can stop asking to JOIN
+    if (message.type === 'START_GAME' && this.joinInterval) {
+        console.log('Received START_GAME, stopping JOIN retries.');
+        clearInterval(this.joinInterval);
+        this.joinInterval = null;
+    }
+
     this.listeners.forEach(listener => listener(message));
+  }
+
+  private getTopic(roomId: string) {
+    return `${this.TOPIC_PREFIX}${roomId}`;
   }
 
   public generateRoomId(): string {
@@ -37,11 +49,6 @@ class MqttSocketService {
     return result;
   }
 
-  private getTopic(roomId: string) {
-    return `${this.TOPIC_PREFIX}${roomId}`;
-  }
-
-  // Connect to the MQTT broker
   private async connect(): Promise<void> {
     if (this.client?.connected) return;
 
@@ -64,7 +71,7 @@ class MqttSocketService {
       this.client.on('message', (_topic, message) => {
         try {
           const parsedMsg: SocketMessage = JSON.parse(message.toString());
-          // Filter out messages sent by ourselves
+          // We filter out our own messages
           if (parsedMsg.senderId !== this.myId) {
              console.log('Received:', parsedMsg.type, 'from', parsedMsg.senderId);
              this.notifyListeners(parsedMsg);
@@ -96,10 +103,12 @@ class MqttSocketService {
   public async joinRoom(roomId: string, playerName: string): Promise<void> {
     await this.connect();
     
+    // Clear any existing retry interval
+    if (this.joinInterval) clearInterval(this.joinInterval);
+
     const topic = this.getTopic(roomId);
     
     return new Promise((resolve, reject) => {
-        // QoS 1 ensures the subscription is acknowledged
         this.client?.subscribe(topic, { qos: 1 }, (err) => {
             if (err) {
                 reject(err);
@@ -108,16 +117,22 @@ class MqttSocketService {
             
             console.log(`Joined/Subscribed to ${topic} as ${playerName}`);
             
-            // IMPORTANT: Add a delay before sending JOIN.
-            // On public brokers, subscription propagation takes a few milliseconds.
-            // If we send immediately, the message might be dropped before the route is established.
-            setTimeout(() => {
+            // HANDSHAKE PROTOCOL:
+            // Send JOIN immediately, and then every 3 seconds until we receive START_GAME
+            // This ensures the Host eventually hears us even on flaky networks/brokers.
+            
+            const sendJoin = () => {
+                console.log('Sending JOIN request...');
                 this.sendMessage(roomId, {
                     type: 'JOIN',
                     payload: { roomId, playerName } as JoinPayload
                 });
-                resolve();
-            }, 1000); // 1 second delay to ensure stability
+            };
+
+            sendJoin(); // Send first immediately
+            this.joinInterval = setInterval(sendJoin, 3000); // Retry every 3s
+            
+            resolve();
         });
     });
   }
@@ -126,7 +141,6 @@ class MqttSocketService {
     if (this.client?.connected) {
         const topic = this.getTopic(roomId);
         const msgWithId = { ...msg, senderId: this.myId };
-        // QoS 1: At least once delivery
         this.client.publish(topic, JSON.stringify(msgWithId), { qos: 1 });
     } else {
         console.warn('Cannot send, not connected');
@@ -155,6 +169,10 @@ class MqttSocketService {
   }
 
   public disconnect() {
+      if (this.joinInterval) {
+          clearInterval(this.joinInterval);
+          this.joinInterval = null;
+      }
       if (this.client) {
           this.client.end();
           this.client = null;
