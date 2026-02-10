@@ -34,8 +34,9 @@ export default function App() {
     switch (msg.type) {
       case 'JOIN':
         // Host receives JOIN from Joiner
-        if (currentIsHost && gameState === GameState.LOBBY && msg.payload.roomId === currentRoomId) {
-          // Initialize game passing Host Name (me) and Joiner Name (from payload)
+        // Removed `gameState === LOBBY` check to be safer against state batching issues
+        if (currentIsHost && msg.payload.roomId === currentRoomId) {
+          console.log('Host received JOIN, starting game...');
           const joinerName = msg.payload.playerName;
           initializeGame(currentRoomId, currentName, joinerName);
         }
@@ -44,6 +45,7 @@ export default function App() {
       case 'START_GAME':
         // Joiner receives START_GAME
         if (!currentIsHost && msg.payload.roomId === currentRoomId) {
+             console.log('Joiner received START_GAME');
              setGameConfig({
                minRange: msg.payload.minRange,
                maxRange: msg.payload.maxRange,
@@ -69,7 +71,7 @@ export default function App() {
         }
         break;
     }
-  }, [gameState]);
+  }, []); // Removed gameState dependency to prevent stale closure issues
 
   useEffect(() => {
     const unsubscribe = socketService.subscribe(handleSocketMessage);
@@ -96,6 +98,7 @@ export default function App() {
     
     setGameConfig({ ...config, roomId: activeRoomId });
     setGameState(GameState.PLAYING);
+    setStatusMessage('');
   };
 
   const handleCreateGame = async (newCode: string, name: string) => {
@@ -121,13 +124,14 @@ export default function App() {
     setRoomId(code);
     setIsHost(false);
     setMyPlayerName(name);
-    setStatusMessage('CONECTANDO...');
+    setStatusMessage('CONECTANDO À SALA...');
     
-    // Initialize Joiner Peer and Connect
     try {
         await socketService.joinRoom(code, name);
+        // If we reach here, we subscribed. The JOIN message is sent after a 1s delay in socketService
         setStatusMessage('AGUARDANDO O HOST INICIAR...');
     } catch (e) {
+        console.error(e);
         setStatusMessage('ERRO AO ENTRAR. TENTE NOVAMENTE.');
         setTimeout(() => resetGame(true), 3000);
     }
@@ -174,14 +178,27 @@ export default function App() {
             <div className="flex flex-col items-center justify-center min-h-screen bg-bitwin-bg text-white animate-fade-in p-6">
                <div className="bg-bitwin-card border-4 border-white/10 p-10 rounded-3xl text-center shadow-2xl w-full max-w-md">
                    <div className="text-6xl mb-6 animate-bounce">⏳</div>
-                   <h2 className="text-2xl font-bold mb-2 uppercase text-white/70">Aguardando Oponente</h2>
-                   <div className="text-5xl font-black text-bitwin-primary my-6 bg-black/20 p-4 rounded-xl border-2 border-dashed border-white/20 select-all">
-                       {statusMessage.startsWith('CÓDIGO') ? roomId : statusMessage}
-                   </div>
+                   <h2 className="text-2xl font-bold mb-2 uppercase text-white/70">
+                       {statusMessage === 'AGUARDANDO O HOST INICIAR...' ? 'Conectado!' : 'Aguarde'}
+                   </h2>
+                   
+                   {statusMessage.startsWith('CÓDIGO') ? (
+                       <div className="text-5xl font-black text-bitwin-primary my-6 bg-black/20 p-4 rounded-xl border-2 border-dashed border-white/20 select-all">
+                           {roomId}
+                       </div>
+                   ) : (
+                       <div className="text-xl font-bold text-bitwin-primary my-6">
+                           {statusMessage}
+                       </div>
+                   )}
+                   
                    {statusMessage.startsWith('CÓDIGO') && (
                        <p className="text-white/50 text-sm">Compartilhe o código acima para jogar.</p>
                    )}
-                   <button onClick={() => resetGame(true)} className="mt-8 text-red-400 font-bold underline">CANCELAR</button>
+                   
+                   <button onClick={() => resetGame(true)} className="mt-8 text-red-400 font-bold underline hover:text-red-300">
+                       CANCELAR
+                   </button>
                </div>
             </div>
         )

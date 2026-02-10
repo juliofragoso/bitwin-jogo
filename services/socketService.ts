@@ -61,7 +61,6 @@ class MqttSocketService {
         resolve();
       });
 
-      // Fixed: renamed topic to _topic to avoid "unused variable" error
       this.client.on('message', (_topic, message) => {
         try {
           const parsedMsg: SocketMessage = JSON.parse(message.toString());
@@ -88,7 +87,7 @@ class MqttSocketService {
     await this.connect();
     
     const topic = this.getTopic(roomId);
-    this.client?.subscribe(topic, (err) => {
+    this.client?.subscribe(topic, { qos: 1 }, (err) => {
         if (err) console.error('Subscribe error:', err);
         else console.log(`Hosted/Subscribed to ${topic} as ${hostName}`);
     });
@@ -100,7 +99,8 @@ class MqttSocketService {
     const topic = this.getTopic(roomId);
     
     return new Promise((resolve, reject) => {
-        this.client?.subscribe(topic, (err) => {
+        // QoS 1 ensures the subscription is acknowledged
+        this.client?.subscribe(topic, { qos: 1 }, (err) => {
             if (err) {
                 reject(err);
                 return;
@@ -108,12 +108,16 @@ class MqttSocketService {
             
             console.log(`Joined/Subscribed to ${topic} as ${playerName}`);
             
-            // Broadcast JOIN message to the topic
-            this.sendMessage(roomId, {
-                type: 'JOIN',
-                payload: { roomId, playerName } as JoinPayload
-            });
-            resolve();
+            // IMPORTANT: Add a delay before sending JOIN.
+            // On public brokers, subscription propagation takes a few milliseconds.
+            // If we send immediately, the message might be dropped before the route is established.
+            setTimeout(() => {
+                this.sendMessage(roomId, {
+                    type: 'JOIN',
+                    payload: { roomId, playerName } as JoinPayload
+                });
+                resolve();
+            }, 1000); // 1 second delay to ensure stability
         });
     });
   }
@@ -122,7 +126,8 @@ class MqttSocketService {
     if (this.client?.connected) {
         const topic = this.getTopic(roomId);
         const msgWithId = { ...msg, senderId: this.myId };
-        this.client.publish(topic, JSON.stringify(msgWithId));
+        // QoS 1: At least once delivery
+        this.client.publish(topic, JSON.stringify(msgWithId), { qos: 1 });
     } else {
         console.warn('Cannot send, not connected');
     }
