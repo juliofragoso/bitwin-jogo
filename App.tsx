@@ -9,7 +9,7 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState>(GameState.LOBBY);
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [roomId, setRoomId] = useState<string>('');
-  const [, setIsHost] = useState<boolean>(false); // Removed unused isHost variable
+  const [, setIsHost] = useState<boolean>(false);
   const [myPlayerName, setMyPlayerName] = useState<string>('');
   
   // Scoring
@@ -65,7 +65,7 @@ export default function App() {
       
       case 'RESTART':
         if(msg.payload.roomId === currentRoomId) {
-           resetGame();
+           resetGame(false); // Do not disconnect peer, just reset UI
         }
         break;
     }
@@ -80,7 +80,7 @@ export default function App() {
     if (gameState === GameState.WAITING_RESULT && opponentAttempts !== null) {
       setGameState(GameState.GAME_OVER);
     } else if (opponentAttempts !== null && gameState === GameState.PLAYING) {
-        // Opponent finished
+        // Opponent finished, waiting for me
     }
   }, [gameState, opponentAttempts]);
 
@@ -98,7 +98,7 @@ export default function App() {
     setGameState(GameState.PLAYING);
   };
 
-  const handleCreateGame = (newCode: string, name: string) => {
+  const handleCreateGame = async (newCode: string, name: string) => {
     roomIdRef.current = newCode;
     isHostRef.current = true;
     myNameRef.current = name;
@@ -106,10 +106,14 @@ export default function App() {
     setRoomId(newCode);
     setIsHost(true);
     setMyPlayerName(name);
+    setStatusMessage(`CRIANDO SALA...`);
+    
+    // Initialize Host Peer
+    await socketService.host(newCode, name);
     setStatusMessage(`CÓDIGO: ${newCode}`);
   };
 
-  const handleJoinGame = (code: string, name: string) => {
+  const handleJoinGame = async (code: string, name: string) => {
     roomIdRef.current = code;
     isHostRef.current = false;
     myNameRef.current = name;
@@ -117,9 +121,16 @@ export default function App() {
     setRoomId(code);
     setIsHost(false);
     setMyPlayerName(name);
-    setStatusMessage('ENTRANDO...');
+    setStatusMessage('CONECTANDO...');
     
-    socketService.joinRoom(code, name);
+    // Initialize Joiner Peer and Connect
+    try {
+        await socketService.joinRoom(code, name);
+        setStatusMessage('AGUARDANDO O HOST INICIAR...');
+    } catch (e) {
+        setStatusMessage('ERRO AO ENTRAR. TENTE NOVAMENTE.');
+        setTimeout(() => resetGame(true), 3000);
+    }
   };
 
   const handleFinishGame = (attempts: number) => {
@@ -133,23 +144,26 @@ export default function App() {
     }
   };
 
-  const resetGame = () => {
+  const resetGame = (fullDisconnect: boolean = true) => {
       setGameState(GameState.LOBBY);
       setGameConfig(null);
-      setRoomId('');
-      roomIdRef.current = '';
-      setIsHost(false);
-      isHostRef.current = false;
-      // Keep player name for convenience? No, let's reset or keep, keeping is better UX but prompt implied clean slate
-      // setMyPlayerName(''); 
+      
       setMyAttempts(0);
       setOpponentAttempts(null);
       setStatusMessage('');
+
+      if (fullDisconnect) {
+        setRoomId('');
+        roomIdRef.current = '';
+        setIsHost(false);
+        isHostRef.current = false;
+        socketService.disconnect();
+      }
   }
 
   const handleRestart = () => {
       socketService.restartGame(roomIdRef.current);
-      resetGame();
+      resetGame(false);
   }
 
   // --- RENDER ---
@@ -162,10 +176,12 @@ export default function App() {
                    <div className="text-6xl mb-6 animate-bounce">⏳</div>
                    <h2 className="text-2xl font-bold mb-2 uppercase text-white/70">Aguardando Oponente</h2>
                    <div className="text-5xl font-black text-bitwin-primary my-6 bg-black/20 p-4 rounded-xl border-2 border-dashed border-white/20 select-all">
-                       {roomId || '...'}
+                       {statusMessage.startsWith('CÓDIGO') ? roomId : statusMessage}
                    </div>
-                   <p className="text-white/50 text-sm">Compartilhe o código acima para jogar.</p>
-                   <button onClick={resetGame} className="mt-8 text-red-400 font-bold underline">CANCELAR</button>
+                   {statusMessage.startsWith('CÓDIGO') && (
+                       <p className="text-white/50 text-sm">Compartilhe o código acima para jogar.</p>
+                   )}
+                   <button onClick={() => resetGame(true)} className="mt-8 text-red-400 font-bold underline">CANCELAR</button>
                </div>
             </div>
         )
