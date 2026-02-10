@@ -11,7 +11,8 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "peerjs": "^1.5.4"
+    "mqtt": "^5.10.1",
+    "buffer": "^6.0.3"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",

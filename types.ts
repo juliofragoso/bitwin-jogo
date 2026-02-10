@@ -20,6 +20,7 @@ export interface GuessResult {
 }
 
 export interface SocketMessage {
+  senderId?: string; // ID to filter own messages
   type: 'JOIN' | 'START_GAME' | 'PLAYER_FINISHED' | 'RESTART';
   payload?: any;
 }

@@ -1,13 +1,22 @@
-import { Peer, DataConnection } from 'peerjs';
+import mqtt from 'mqtt';
 import { SocketMessage, StartGamePayload, PlayerFinishedPayload, JoinPayload } from '../types';
 
-class P2PSocketService {
-  private peer: Peer | null = null;
-  private conn: DataConnection | null = null;
+class MqttSocketService {
+  private client: mqtt.MqttClient | null = null;
   private listeners: ((message: SocketMessage) => void)[] = [];
   
-  // Used to namespace the IDs so they don't clash with other PeerJS users easily
-  private readonly ID_PREFIX = 'bitwin-game-v1-';
+  // Unique ID for this session to ignore our own messages
+  private myId: string = Math.random().toString(36).substring(2, 15);
+  
+  // Public EMQX Broker (Secure WebSocket)
+  // This is a free public broker, excellent for demos.
+  private readonly BROKER_URL = 'wss://broker.emqx.io:8084/mqtt';
+  
+  private readonly TOPIC_PREFIX = 'bitwin-game-v1/';
+
+  constructor() {
+    console.log('Socket Service Initialized with ID:', this.myId);
+  }
 
   public subscribe(callback: (message: SocketMessage) => void) {
     this.listeners.push(callback);
@@ -20,7 +29,6 @@ class P2PSocketService {
     this.listeners.forEach(listener => listener(message));
   }
 
-  // Generate a random 5-character code
   public generateRoomId(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; 
     let result = '';
@@ -30,139 +38,126 @@ class P2PSocketService {
     return result;
   }
 
+  private getTopic(roomId: string) {
+    return `${this.TOPIC_PREFIX}${roomId}`;
+  }
+
+  // Connect to the MQTT broker
+  private async connect(): Promise<void> {
+    if (this.client?.connected) return;
+
+    return new Promise((resolve, reject) => {
+      this.client = mqtt.connect(this.BROKER_URL, {
+        clientId: `bitwin-${this.myId}`,
+        keepalive: 60,
+        protocolId: 'MQTT',
+        protocolVersion: 4,
+        clean: true,
+        reconnectPeriod: 1000,
+        connectTimeout: 30 * 1000,
+      });
+
+      this.client.on('connect', () => {
+        console.log('Connected to MQTT Broker');
+        resolve();
+      });
+
+      this.client.on('message', (topic, message) => {
+        try {
+          const parsedMsg: SocketMessage = JSON.parse(message.toString());
+          // Filter out messages sent by ourselves
+          if (parsedMsg.senderId !== this.myId) {
+             console.log('Received:', parsedMsg.type, 'from', parsedMsg.senderId);
+             this.notifyListeners(parsedMsg);
+          }
+        } catch (e) {
+          console.error('Failed to parse message', e);
+        }
+      });
+
+      this.client.on('error', (err) => {
+        console.error('MQTT Error:', err);
+        // Don't reject here if it's a reconnection attempt, but initial connection might need it
+        if (!this.client?.connected) reject(err);
+      });
+    });
+  }
+
   // --- Actions ---
 
-  // Host initializes the room (Opens P2P Server)
+  // In MQTT, Host and Joiner logic is similar: Connect -> Subscribe to Room Topic
   public async host(roomId: string, hostName: string): Promise<void> {
-    this.disconnect(); // Clear any previous session
-
-    const peerId = `${this.ID_PREFIX}${roomId}`;
+    await this.connect();
     
-    // Log hostName to avoid unused variable error and for debugging purposes
-    console.log(`Initializing host session for player: ${hostName} in room: ${roomId}`);
+    const topic = this.getTopic(roomId);
+    this.client?.subscribe(topic, (err) => {
+        if (err) console.error('Subscribe error:', err);
+        else console.log(`Hosted/Subscribed to ${topic} as ${hostName}`);
+    });
+  }
 
+  public async joinRoom(roomId: string, playerName: string): Promise<void> {
+    await this.connect();
+    
+    const topic = this.getTopic(roomId);
+    
     return new Promise((resolve, reject) => {
-        this.peer = new Peer(peerId);
-
-        this.peer.on('open', (id) => {
-            console.log('Host initialized:', id);
+        this.client?.subscribe(topic, (err) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            
+            console.log(`Joined/Subscribed to ${topic} as ${playerName}`);
+            
+            // Broadcast JOIN message to the topic
+            // The Host is listening to this topic
+            this.sendMessage(roomId, {
+                type: 'JOIN',
+                payload: { roomId, playerName } as JoinPayload
+            });
             resolve();
         });
-
-        this.peer.on('connection', (conn) => {
-            console.log('Host received connection');
-            this.handleConnection(conn);
-        });
-
-        this.peer.on('error', (err) => {
-            console.error('Peer error:', err);
-            // Reject the promise if initialization fails
-            reject(err);
-        });
     });
   }
 
-  // Joiner connects to the room
-  public async joinRoom(roomId: string, playerName: string): Promise<void> {
-    this.disconnect();
-
-    // Joiner gets a random ID
-    this.peer = new Peer();
-
-    return new Promise((resolve, reject) => {
-        this.peer!.on('open', () => {
-            const hostId = `${this.ID_PREFIX}${roomId}`;
-            console.log('Connecting to:', hostId);
-            
-            const conn = this.peer!.connect(hostId, {
-                metadata: { playerName }
-            });
-
-            conn.on('open', () => {
-                console.log('Connected to Host');
-                this.handleConnection(conn);
-                
-                // Send JOIN message immediately
-                this.sendMessage({
-                    type: 'JOIN',
-                    payload: { roomId, playerName } as JoinPayload
-                });
-                resolve();
-            });
-
-            conn.on('error', (err) => {
-                console.error('Connection error:', err);
-                reject(err);
-            });
-        });
-        
-        this.peer!.on('error', (err) => {
-             console.error('Peer error (Joiner):', err);
-        });
-    });
-  }
-
-  private handleConnection(conn: DataConnection) {
-    this.conn = conn;
-
-    conn.on('data', (data) => {
-        // console.log('Received Data:', data);
-        this.notifyListeners(data as SocketMessage);
-    });
-
-    conn.on('close', () => {
-        console.log('Connection closed');
-        this.conn = null;
-    });
-
-    conn.on('error', (err) => {
-        console.error('Conn Error:', err);
-    });
-  }
-
-  private sendMessage(msg: SocketMessage) {
-    if (this.conn && this.conn.open) {
-        this.conn.send(msg);
+  private sendMessage(roomId: string, msg: SocketMessage) {
+    if (this.client?.connected) {
+        const topic = this.getTopic(roomId);
+        const msgWithId = { ...msg, senderId: this.myId };
+        this.client.publish(topic, JSON.stringify(msgWithId));
     } else {
-        console.warn('Cannot send message, no connection:', msg);
+        console.warn('Cannot send, not connected');
     }
   }
 
   public startGame(roomId: string, config: StartGamePayload) {
-    this.sendMessage({
+    this.sendMessage(roomId, {
       type: 'START_GAME',
       payload: { ...config, roomId } 
     });
   }
 
   public sendFinished(roomId: string, attempts: number) {
-    // Notify local listeners (so I can see my own finish state logic if needed, 
-    // though App.tsx usually handles local state directly, it's good for symmetry)
-    // Actually App.tsx calls sendFinished AND sets local state. 
-    // But we need to send to opponent.
-    this.sendMessage({
+    this.sendMessage(roomId, {
       type: 'PLAYER_FINISHED',
       payload: { roomId, attempts } as PlayerFinishedPayload
     });
   }
 
   public restartGame(roomId: string) {
-      this.sendMessage({
+      this.sendMessage(roomId, {
           type: 'RESTART',
           payload: { roomId }
       });
   }
 
   public disconnect() {
-      if (this.conn) {
-          this.conn.close();
-          this.conn = null;
-      }
-      if (this.peer) {
-          this.peer.destroy();
-          this.peer = null;
+      if (this.client) {
+          this.client.end();
+          this.client = null;
       }
   }
 }
 
-export const socketService = new P2PSocketService();
+export const socketService = new MqttSocketService();
