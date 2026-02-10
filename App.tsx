@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Lobby } from './components/Lobby';
 import { Game } from './components/Game';
 import { ResultScreen } from './components/ResultScreen';
@@ -9,7 +9,7 @@ export default function App() {
   const [gameState, setGameState] = useState<GameState>(GameState.LOBBY);
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [roomId, setRoomId] = useState<string>('');
-  const [isHost, setIsHost] = useState<boolean>(false);
+  const [, setIsHost] = useState<boolean>(false); // Removed unused isHost variable
   const [myPlayerName, setMyPlayerName] = useState<string>('');
   
   // Scoring
