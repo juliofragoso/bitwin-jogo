@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>BITWIN</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -46,25 +46,22 @@
         color: white;
         background-image: radial-gradient(circle at 50% 0%, #581c63 0%, #2e003e 70%);
         min-height: 100vh;
+        overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile */
       }
       
       /* Custom scrollbar */
       ::-webkit-scrollbar {
-        width: 10px;
+        width: 6px;
       }
       ::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.2); 
+        background: rgba(0, 0, 0, 0.1); 
         border-radius: 5px;
       }
       ::-webkit-scrollbar-thumb {
         background: #ffcc00; 
         border-radius: 5px;
-        border: 2px solid #2e003e;
       }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #ffdb4d; 
-      }
-
+      
       /* Power-up Effects */
       @keyframes glitch-anim {
         0% { transform: translate(0) }
