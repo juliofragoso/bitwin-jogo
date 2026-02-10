@@ -57,20 +57,8 @@ export default function App() {
              const joinerName = msg.payload.playerName;
              const joinerAvatar = msg.payload.playerAvatar || '👽';
              
-             // Host determines the game mode from the config if it exists (rematch) or from selection (not available here in rematch logic directly, but handled in initializeGame)
-             // However, for a fresh start, we need to know the mode. 
-             // IMPORTANT: In a rematch, we reuse the previous mode.
-             const mode = gameConfigRef.current?.gameMode || 'CLASSIC'; // Default to Classic if unknown, but usually passed via closure or state if fresh.
-             
-             // Actually, when Host creates the room, they selected a mode. We need to store that mode in a ref or state to use it here when someone joins.
-             // We'll trust that gameConfigRef has it if it's a rematch, but if it's the FIRST game, gameConfig is null.
-             // We need to store the "Pending Game Mode" chosen in Lobby.
-             // Since we don't have a separate state for "Hosted Mode", we can grab it from the component state if we are creating.
-             // But handleCreateGame sets up the room. We should save the mode there.
-             // Fix: We will check `gameConfigRef` for Rematch, but for new games we need the mode.
-             // Since `initializeGame` is called here, we need to pass the mode.
-             // We'll rely on a temporary storage or just the fact that `handleCreateGame` set something up? No, `handleCreateGame` just joins the socket channel.
-             // Let's modify `handleCreateGame` to store the chosen mode in a ref.
+             // Host determines the game mode from the config if it exists (rematch) or from selection 
+             // stored in pendingGameModeRef via handleCreateGame
              initializeGame(currentRoomId, currentName, currentAvatar, joinerName, joinerAvatar);
           } else {
              console.log('Ignored JOIN because game is already in progress');

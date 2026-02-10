@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GameConfig, GuessResult, GameState, PowerUpType, PassiveType, SocketMessage } from '../types';
 import { Button } from './Button';
 import { socketService } from '../services/socketService';
@@ -70,7 +70,6 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
   const [visualMax, setVisualMax] = useState(config.maxRange);
 
   const historyEndRef = useRef<HTMLDivElement>(null);
-  const feedbackTimeoutRef = useRef<any>(null);
 
   // Determine Opponent info
   const isMeHost = myPlayerName === config.hostName;
