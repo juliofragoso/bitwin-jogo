@@ -194,7 +194,7 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
   };
 
   const getBorderColor = () => {
-      if (selectedPassive !== PassiveType.THERMAL_SENSOR || history.length === 0) return 'border-white/10';
+      if (selectedPassive !== PassiveType.THERMAL_SENSOR || history.length === 0) return 'border-white/10 lg:border-white/10';
       const lastVal = history[history.length - 1].value;
       const dist = Math.abs(lastVal - config.targetNumber);
       const totalRange = config.maxRange - config.minRange;
@@ -269,22 +269,38 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
       )
   }
 
-  // -- MAIN GAME RENDER (APP STYLE) --
+  // -- MAIN GAME RENDER --
+  
+  // Mobile: h-[100dvh], fixed layout, no outer scroll.
+  // Desktop (lg): min-h-screen, padding, cards layout, centered.
 
   return (
-    <div className={`flex flex-col h-[100dvh] bg-bitwin-bg overflow-hidden ${isGlitched ? 'glitch-effect' : ''}`}>
+    <div className={`
+        flex flex-col 
+        h-[100dvh] lg:min-h-screen lg:h-auto 
+        lg:items-center lg:justify-center lg:py-10
+        bg-bitwin-bg 
+        overflow-hidden lg:overflow-visible
+        ${isGlitched ? 'glitch-effect' : ''}
+    `}>
       
-      {/* 1. COMPACT HEADER */}
-      <div className="flex-none bg-bitwin-card/80 border-b border-white/10 px-4 py-2 flex justify-between items-center z-20 relative shadow-md">
+      {/* 1. HEADER */}
+      {/* Mobile: Full width bar. Desktop: Floating Card. */}
+      <div className={`
+          flex-none w-full z-20 relative
+          bg-bitwin-card/80 border-b border-white/10 px-4 py-2 shadow-md
+          lg:bg-bitwin-card/50 lg:border lg:border-white/10 lg:rounded-3xl lg:p-4 lg:mb-8 lg:max-w-4xl lg:mx-auto lg:w-full lg:shadow-none
+          flex justify-between items-center
+      `}>
          {/* Me */}
          <div className="flex items-center gap-2 max-w-[40%]">
-             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-bitwin-primary flex items-center justify-center border-2 border-white text-lg">
+             <div className="w-8 h-8 md:w-14 md:h-14 rounded-full bg-bitwin-primary flex items-center justify-center border-2 md:border-4 border-white text-lg md:text-3xl shadow-lg">
                  {myAvatar}
              </div>
-             <div className="overflow-hidden">
-                 <div className="font-bold text-bitwin-primary text-sm uppercase truncate">{myPlayerName}</div>
+             <div className="overflow-hidden text-left">
+                 <div className="font-bold text-bitwin-primary text-sm md:text-xl uppercase truncate">{myPlayerName}</div>
                  {config.gameMode === 'HACKER' && (
-                     <div className="flex gap-1 text-[10px] text-white/60">
+                     <div className="flex gap-1 text-[10px] md:text-xs text-white/60">
                          <span>{ACTIVE_POWERUPS.find(a => a.id === selectedActive)?.icon}</span>
                          <span>{PASSIVE_POWERUPS.find(p => p.id === selectedPassive)?.icon}</span>
                      </div>
@@ -293,37 +309,56 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
          </div>
 
          {/* Center */}
-         <div className="absolute left-1/2 transform -translate-x-1/2 top-1 text-center">
-             <div className="bg-black/40 px-3 py-0.5 rounded-b-xl text-[10px] font-bold tracking-widest uppercase border-x border-b border-white/10 text-white/50">
-                {config.gameMode === 'HACKER' ? '⚡ HACKER' : '🛡️ CLÁSSICO'}
+         <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
+             <div className="bg-black/40 px-3 py-0.5 rounded-b-xl text-[10px] md:text-xs font-bold tracking-widest uppercase border-x border-b border-white/10 text-white/50 lg:hidden">
+                {config.gameMode === 'HACKER' ? '⚡' : '🛡️'}
              </div>
-             <div className="text-xl font-black italic text-white/20 mt-1">VS</div>
+             <div className="text-xl md:text-4xl font-black italic text-white/20 md:text-white lg:mt-0">VS</div>
          </div>
 
          {/* Opponent */}
          <div className="flex items-center justify-end gap-2 max-w-[40%]">
              <div className="text-right overflow-hidden">
-                <div className="font-bold text-bitwin-secondary text-sm uppercase truncate">{opponentName}</div>
+                <div className="font-bold text-bitwin-secondary text-sm md:text-xl uppercase truncate">{opponentName}</div>
              </div>
-             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-bitwin-secondary flex items-center justify-center border-2 border-white text-lg">
+             <div className="w-8 h-8 md:w-14 md:h-14 rounded-full bg-bitwin-secondary flex items-center justify-center border-2 md:border-4 border-white text-lg md:text-3xl shadow-lg">
                  {opponentAvatar}
              </div>
          </div>
       </div>
 
-      {/* 2. GAME CONTAINER (Flex Body) */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden max-w-7xl mx-auto w-full">
+      {/* 2. MAIN CONTENT WRAPPER */}
+      {/* Mobile: Flex column filling height. Desktop: Row with gap, fixed height container. */}
+      <div className={`
+         flex-1 w-full 
+         flex flex-col lg:flex-row 
+         lg:gap-8 lg:items-stretch lg:justify-center 
+         lg:h-[650px] lg:flex-none
+         max-w-6xl mx-auto
+         overflow-hidden lg:overflow-visible
+         lg:px-4
+      `}>
          
-         {/* LEFT PANEL: GAME INPUT (Top on mobile) */}
-         <div className={`flex-none lg:flex-1 p-2 md:p-6 flex flex-col justify-center items-center transition-all duration-500 border-b lg:border-b-0 lg:border-r border-white/10 relative z-10 ${getBorderColor()} ${isFrozen ? 'freeze-effect' : ''}`}>
+         {/* LEFT PANEL: GAME INPUT */}
+         <div className={`
+             flex-none lg:flex-1 
+             p-2 md:p-6 
+             flex flex-col justify-center items-center 
+             transition-all duration-500 
+             border-b border-white/10 
+             lg:border-4 lg:border-white/10 lg:rounded-[3rem] lg:bg-bitwin-card lg:shadow-2xl lg:p-10
+             relative z-10 
+             ${getBorderColor()} 
+             ${isFrozen ? 'freeze-effect' : ''}
+         `}>
              
             {isWaiting ? (
                 <div className="flex flex-col items-center justify-center h-full text-center animate-pulse p-4">
-                    <div className="text-6xl mb-4">🏆</div>
-                    <h2 className="text-2xl font-black text-bitwin-primary mb-2">VOCÊ ACERTOU!</h2>
-                    <p className="text-white/60 text-sm">Aguardando {opponentName}...</p>
-                    <div className="mt-4 bg-black/20 px-6 py-2 rounded-xl">
-                        <p className="text-white font-bold">SCORE: <span className="text-bitwin-accent">{history.filter(h => !h.freeAttempt).length}</span></p>
+                    <div className="text-6xl lg:text-8xl mb-4 lg:mb-6">🏆</div>
+                    <h2 className="text-2xl lg:text-4xl font-black text-bitwin-primary mb-2">VOCÊ ACERTOU!</h2>
+                    <p className="text-white/60 text-sm lg:text-xl">Aguardando {opponentName}...</p>
+                    <div className="mt-4 lg:mt-8 bg-black/20 px-6 py-2 lg:px-8 lg:py-4 rounded-xl lg:rounded-2xl">
+                        <p className="text-white font-bold lg:text-2xl">SCORE: <span className="text-bitwin-accent">{history.filter(h => !h.freeAttempt).length}</span></p>
                     </div>
                 </div>
             ) : (
@@ -356,7 +391,7 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                         
                         {/* Up Arrow Feedback */}
                         <div className={`transition-all duration-300 flex flex-col items-center ${lastDirection === 'HIGHER' ? 'opacity-100 scale-105' : 'opacity-30 grayscale scale-90'}`}>
-                            <div className="bg-bitwin-accent text-bitwin-bg w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl md:text-3xl shadow-sm">▲</div>
+                            <div className="bg-bitwin-accent text-bitwin-bg w-10 h-10 md:w-20 md:h-20 rounded-full flex items-center justify-center text-xl md:text-4xl shadow-sm">▲</div>
                         </div>
 
                         {/* Form */}
@@ -367,7 +402,7 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                                 onChange={(e) => setGuess(e.target.value)}
                                 placeholder="00"
                                 disabled={isFrozen}
-                                className="w-full bg-white text-bitwin-card text-center text-3xl md:text-5xl font-black rounded-xl h-14 md:h-20 outline-none focus:ring-4 ring-bitwin-primary transition-all disabled:bg-gray-400"
+                                className="w-full bg-white text-bitwin-card text-center text-3xl md:text-6xl font-black rounded-xl h-14 md:h-24 outline-none focus:ring-4 ring-bitwin-primary transition-all disabled:bg-gray-400"
                             />
                             <Button type="submit" variant="primary" size="md" className="w-full py-2 text-lg md:text-xl shadow-md" disabled={!guess || isFrozen}>
                                 CHUTAR
@@ -376,7 +411,7 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
 
                         {/* Down Arrow Feedback */}
                         <div className={`transition-all duration-300 flex flex-col items-center ${lastDirection === 'LOWER' ? 'opacity-100 scale-105' : 'opacity-30 grayscale scale-90'}`}>
-                            <div className="bg-bitwin-secondary text-white w-10 h-10 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl md:text-3xl shadow-sm">▼</div>
+                            <div className="bg-bitwin-secondary text-white w-10 h-10 md:w-20 md:h-20 rounded-full flex items-center justify-center text-xl md:text-4xl shadow-sm">▼</div>
                         </div>
                     </div>
                     
@@ -391,9 +426,15 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
             )}
          </div>
 
-         {/* RIGHT/BOTTOM PANEL: HISTORY (Fills remaining space) */}
-         <div className="flex-1 lg:w-80 bg-black/10 flex flex-col overflow-hidden">
-             <div className="bg-black/20 px-4 py-2 flex justify-between items-center border-b border-white/5 flex-none">
+         {/* RIGHT PANEL: HISTORY */}
+         <div className={`
+             flex-1 lg:flex-none
+             bg-black/10 
+             lg:bg-black/20 lg:w-96 lg:rounded-[2.5rem] lg:border-2 lg:border-white/10 lg:p-6 lg:shadow-xl
+             flex flex-col overflow-hidden
+         `}>
+             {/* History Header */}
+             <div className="bg-black/20 px-4 py-2 flex justify-between items-center border-b border-white/5 flex-none lg:bg-transparent lg:border-b lg:border-white/10 lg:mb-4 lg:px-0">
                  <span className="text-white/40 font-bold text-xs uppercase tracking-widest">HISTÓRICO</span>
                  <div className="text-xs font-mono text-white/40">
                     <span className="text-white font-bold text-sm mr-1">{history.filter(h => !h.freeAttempt).length}</span> 
@@ -401,13 +442,13 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                  </div>
              </div>
 
+             {/* Scrollable List */}
              <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
                 {history.length === 0 && (
                     <div className="h-full flex flex-col items-center justify-center text-white/20 text-xs italic py-4">
                         <span>Aguardando o primeiro chute...</span>
                     </div>
                 )}
-                {/* Reversed map for history so newest is at bottom naturally, but we auto-scroll there */}
                 {history.map((h, idx) => (
                     <div key={idx} className={`flex items-center justify-between bg-bitwin-bg/90 p-2 md:p-3 rounded-lg border ${h.freeAttempt ? 'border-yellow-400/50' : 'border-white/5'} animate-pop-in`}>
                         <div className="flex items-center gap-3">
@@ -431,6 +472,10 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                 <div ref={historyEndRef} />
              </div>
          </div>
+      </div>
+
+      <div className="hidden lg:block mt-8 text-white/10 text-xs font-bold font-mono">
+        v2.06
       </div>
     </div>
   );

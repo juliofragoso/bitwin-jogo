@@ -181,7 +181,7 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
       </div>
       
       <div className="mt-8 text-white/10 text-xs font-bold font-mono">
-        v2.0
+        v2.06
       </div>
     </div>
   );
