@@ -271,212 +271,245 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
 
   // -- MAIN GAME RENDER --
   
-  // Mobile: h-[100dvh], fixed layout, no outer scroll.
-  // Desktop (lg): min-h-screen, padding, cards layout, centered.
+  // Outer Container: Flex Row to hold [Left Ad] [Game Center] [Right Ad]
+  // Mobile: Just a flex column with ads hidden or at bottom.
 
   return (
     <div className={`
-        flex flex-col 
+        flex flex-row
         h-[100dvh] lg:min-h-screen lg:h-auto 
-        lg:items-center lg:justify-center lg:py-10
+        lg:items-start lg:justify-between
         bg-bitwin-bg 
         overflow-hidden lg:overflow-visible
         ${isGlitched ? 'glitch-effect' : ''}
     `}>
       
-      {/* 1. HEADER */}
-      {/* Mobile: Full width bar. Desktop: Floating Card. */}
-      <div className={`
-          flex-none w-full z-20 relative
-          bg-bitwin-card/80 border-b border-white/10 px-4 py-2 shadow-md
-          lg:bg-bitwin-card/50 lg:border lg:border-white/10 lg:rounded-3xl lg:p-4 lg:mb-8 lg:max-w-4xl lg:mx-auto lg:w-full lg:shadow-none
-          flex justify-between items-center
-      `}>
-         {/* Me */}
-         <div className="flex items-center gap-2 max-w-[40%]">
-             <div className="w-8 h-8 md:w-14 md:h-14 rounded-full bg-bitwin-primary flex items-center justify-center border-2 md:border-4 border-white text-lg md:text-3xl shadow-lg">
-                 {myAvatar}
-             </div>
-             <div className="overflow-hidden text-left">
-                 <div className="font-bold text-bitwin-primary text-sm md:text-xl uppercase truncate">{myPlayerName}</div>
-                 {config.gameMode === 'HACKER' && (
-                     <div className="flex gap-1 text-[10px] md:text-xs text-white/60">
-                         <span>{ACTIVE_POWERUPS.find(a => a.id === selectedActive)?.icon}</span>
-                         <span>{PASSIVE_POWERUPS.find(p => p.id === selectedPassive)?.icon}</span>
-                     </div>
-                 )}
-             </div>
-         </div>
-
-         {/* Center */}
-         <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
-             <div className="bg-black/40 px-3 py-0.5 rounded-b-xl text-[10px] md:text-xs font-bold tracking-widest uppercase border-x border-b border-white/10 text-white/50 lg:hidden">
-                {config.gameMode === 'HACKER' ? '⚡' : '🛡️'}
-             </div>
-             <div className="text-xl md:text-4xl font-black italic text-white/20 md:text-white lg:mt-0">VS</div>
-         </div>
-
-         {/* Opponent */}
-         <div className="flex items-center justify-end gap-2 max-w-[40%]">
-             <div className="text-right overflow-hidden">
-                <div className="font-bold text-bitwin-secondary text-sm md:text-xl uppercase truncate">{opponentName}</div>
-             </div>
-             <div className="w-8 h-8 md:w-14 md:h-14 rounded-full bg-bitwin-secondary flex items-center justify-center border-2 md:border-4 border-white text-lg md:text-3xl shadow-lg">
-                 {opponentAvatar}
-             </div>
-         </div>
+      {/* --- DESKTOP LEFT AD (Skyscraper) --- */}
+      <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none sticky top-0 h-screen p-4 z-0">
+          <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group">
+             <img 
+               src="https://placehold.co/160x600/2e003e/ffcc00?text=SKYSCRAPER+AD+L" 
+               alt="Advertisement Left" 
+               className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+             />
+          </div>
       </div>
 
-      {/* 2. MAIN CONTENT WRAPPER */}
-      {/* Mobile: Flex column filling height. Desktop: Row with gap, fixed height container. */}
-      <div className={`
-         flex-1 w-full 
-         flex flex-col lg:flex-row 
-         lg:gap-8 lg:items-stretch lg:justify-center 
-         lg:h-[650px] lg:flex-none
-         max-w-6xl mx-auto
-         overflow-hidden lg:overflow-visible
-         lg:px-4
-      `}>
-         
-         {/* LEFT PANEL: GAME INPUT */}
-         <div className={`
-             flex-none lg:flex-1 
-             p-2 md:p-6 
-             flex flex-col justify-center items-center 
-             transition-all duration-500 
-             border-b border-white/10 
-             lg:border-4 lg:border-white/10 lg:rounded-[3rem] lg:bg-bitwin-card lg:shadow-2xl lg:p-10
-             relative z-10 
-             ${getBorderColor()} 
-             ${isFrozen ? 'freeze-effect' : ''}
-         `}>
-             
-            {isWaiting ? (
-                <div className="flex flex-col items-center justify-center h-full text-center animate-pulse p-4">
-                    <div className="text-6xl lg:text-8xl mb-4 lg:mb-6">🏆</div>
-                    <h2 className="text-2xl lg:text-4xl font-black text-bitwin-primary mb-2">VOCÊ ACERTOU!</h2>
-                    <p className="text-white/60 text-sm lg:text-xl">Aguardando {opponentName}...</p>
-                    <div className="mt-4 lg:mt-8 bg-black/20 px-6 py-2 lg:px-8 lg:py-4 rounded-xl lg:rounded-2xl">
-                        <p className="text-white font-bold lg:text-2xl">SCORE: <span className="text-bitwin-accent">{history.filter(h => !h.freeAttempt).length}</span></p>
-                    </div>
-                </div>
-            ) : (
-                <div className="w-full max-w-lg flex flex-col gap-2 md:gap-6">
-                    
-                    {/* Range Display */}
-                    <div className="flex justify-center items-center gap-2 md:gap-4 text-center py-2">
-                        <span className="text-2xl md:text-5xl font-black text-bitwin-accent transition-all">{visualMin}</span>
-                        <div className="flex flex-col items-center mx-2">
-                             <span className="text-xs text-white/30 uppercase font-bold tracking-widest mb-1">ALVO</span>
-                             <span className="text-4xl md:text-7xl font-black text-bitwin-primary drop-shadow-lg">?</span>
-                        </div>
-                        <span className="text-2xl md:text-5xl font-black text-bitwin-secondary transition-all">{visualMax}</span>
-                    </div>
+      {/* --- CENTER GAME AREA --- */}
+      <div className="flex-1 flex flex-col h-full max-w-6xl mx-auto w-full relative z-10 lg:py-10">
 
-                    {/* Active Powerup Button */}
-                    {config.gameMode === 'HACKER' && !activeUsed && (
-                        <div className="flex justify-center">
-                            <button 
-                                onClick={activatePowerUp}
-                                className="bg-bitwin-primary text-black font-black text-[10px] md:text-xs px-3 py-1 rounded-full uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-transform"
-                            >
-                                USAR {ACTIVE_POWERUPS.find(a => a.id === selectedActive)?.name}
-                            </button>
-                        </div>
-                    )}
+        {/* 1. HEADER */}
+        <div className={`
+            flex-none w-full z-20 relative
+            bg-bitwin-card/80 border-b border-white/10 px-4 py-2 shadow-md
+            lg:bg-bitwin-card/50 lg:border lg:border-white/10 lg:rounded-3xl lg:p-4 lg:mb-8 lg:w-full lg:shadow-none
+            flex justify-between items-center
+        `}>
+           {/* Me */}
+           <div className="flex items-center gap-2 max-w-[40%]">
+               <div className="w-8 h-8 md:w-14 md:h-14 rounded-full bg-bitwin-primary flex items-center justify-center border-2 md:border-4 border-white text-lg md:text-3xl shadow-lg">
+                   {myAvatar}
+               </div>
+               <div className="overflow-hidden text-left">
+                   <div className="font-bold text-bitwin-primary text-sm md:text-xl uppercase truncate">{myPlayerName}</div>
+                   {config.gameMode === 'HACKER' && (
+                       <div className="flex gap-1 text-[10px] md:text-xs text-white/60">
+                           <span>{ACTIVE_POWERUPS.find(a => a.id === selectedActive)?.icon}</span>
+                           <span>{PASSIVE_POWERUPS.find(p => p.id === selectedPassive)?.icon}</span>
+                       </div>
+                   )}
+               </div>
+           </div>
 
-                    {/* Input Controls */}
-                    <div className="flex items-center justify-between gap-2 md:gap-4 bg-black/20 p-2 md:p-6 rounded-2xl border border-white/5">
-                        
-                        {/* Up Arrow Feedback */}
-                        <div className={`transition-all duration-300 flex flex-col items-center ${lastDirection === 'HIGHER' ? 'opacity-100 scale-105' : 'opacity-30 grayscale scale-90'}`}>
-                            <div className="bg-bitwin-accent text-bitwin-bg w-10 h-10 md:w-20 md:h-20 rounded-full flex items-center justify-center text-xl md:text-4xl shadow-sm">▲</div>
-                        </div>
+           {/* Center */}
+           <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
+               <div className="bg-black/40 px-3 py-0.5 rounded-b-xl text-[10px] md:text-xs font-bold tracking-widest uppercase border-x border-b border-white/10 text-white/50 lg:hidden">
+                  {config.gameMode === 'HACKER' ? '⚡' : '🛡️'}
+               </div>
+               <div className="text-xl md:text-4xl font-black italic text-white/20 md:text-white lg:mt-0">VS</div>
+           </div>
 
-                        {/* Form */}
-                        <form onSubmit={handleGuess} className="flex-1 flex flex-col gap-2">
-                            <input
-                                type={selectedActive === PowerUpType.DOUBLE_THREAD && activeUsed ? "text" : "number"}
-                                value={guess}
-                                onChange={(e) => setGuess(e.target.value)}
-                                placeholder="00"
-                                disabled={isFrozen}
-                                className="w-full bg-white text-bitwin-card text-center text-3xl md:text-6xl font-black rounded-xl h-14 md:h-24 outline-none focus:ring-4 ring-bitwin-primary transition-all disabled:bg-gray-400"
-                            />
-                            <Button type="submit" variant="primary" size="md" className="w-full py-2 text-lg md:text-xl shadow-md" disabled={!guess || isFrozen}>
-                                CHUTAR
-                            </Button>
-                        </form>
+           {/* Opponent */}
+           <div className="flex items-center justify-end gap-2 max-w-[40%]">
+               <div className="text-right overflow-hidden">
+                  <div className="font-bold text-bitwin-secondary text-sm md:text-xl uppercase truncate">{opponentName}</div>
+               </div>
+               <div className="w-8 h-8 md:w-14 md:h-14 rounded-full bg-bitwin-secondary flex items-center justify-center border-2 md:border-4 border-white text-lg md:text-3xl shadow-lg">
+                   {opponentAvatar}
+               </div>
+           </div>
+        </div>
 
-                        {/* Down Arrow Feedback */}
-                        <div className={`transition-all duration-300 flex flex-col items-center ${lastDirection === 'LOWER' ? 'opacity-100 scale-105' : 'opacity-30 grayscale scale-90'}`}>
-                            <div className="bg-bitwin-secondary text-white w-10 h-10 md:w-20 md:h-20 rounded-full flex items-center justify-center text-xl md:text-4xl shadow-sm">▼</div>
-                        </div>
-                    </div>
-                    
-                    {/* Feedback Text */}
-                    <div className="h-6 text-center">
-                        <p className={`font-bold uppercase text-xs md:text-sm animate-bounce ${lastDirection === 'HIGHER' ? 'text-bitwin-accent' : 'text-bitwin-secondary'}`}>
-                             {feedbackText}
-                        </p>
-                    </div>
+        {/* 2. GAME CONTENT WRAPPER */}
+        <div className={`
+           flex-1 w-full 
+           flex flex-col lg:flex-row 
+           lg:gap-8 lg:items-stretch lg:justify-center 
+           lg:h-[650px] lg:flex-none
+           overflow-hidden lg:overflow-visible
+           lg:px-4
+        `}>
+           
+           {/* LEFT PANEL: GAME INPUT */}
+           <div className={`
+               flex-none lg:flex-1 
+               p-2 md:p-6 
+               flex flex-col justify-center items-center 
+               transition-all duration-500 
+               border-b border-white/10 
+               lg:border-4 lg:border-white/10 lg:rounded-[3rem] lg:bg-bitwin-card lg:shadow-2xl lg:p-10
+               relative z-10 
+               ${getBorderColor()} 
+               ${isFrozen ? 'freeze-effect' : ''}
+           `}>
+               
+              {isWaiting ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center animate-pulse p-4">
+                      <div className="text-6xl lg:text-8xl mb-4 lg:mb-6">🏆</div>
+                      <h2 className="text-2xl lg:text-4xl font-black text-bitwin-primary mb-2">VOCÊ ACERTOU!</h2>
+                      <p className="text-white/60 text-sm lg:text-xl">Aguardando {opponentName}...</p>
+                      <div className="mt-4 lg:mt-8 bg-black/20 px-6 py-2 lg:px-8 lg:py-4 rounded-xl lg:rounded-2xl">
+                          <p className="text-white font-bold lg:text-2xl">SCORE: <span className="text-bitwin-accent">{history.filter(h => !h.freeAttempt).length}</span></p>
+                      </div>
+                  </div>
+              ) : (
+                  <div className="w-full max-w-lg flex flex-col gap-2 md:gap-6">
+                      
+                      {/* Range Display */}
+                      <div className="flex justify-center items-center gap-2 md:gap-4 text-center py-2">
+                          <span className="text-2xl md:text-5xl font-black text-bitwin-accent transition-all">{visualMin}</span>
+                          <div className="flex flex-col items-center mx-2">
+                               <span className="text-xs text-white/30 uppercase font-bold tracking-widest mb-1">ALVO</span>
+                               <span className="text-4xl md:text-7xl font-black text-bitwin-primary drop-shadow-lg">?</span>
+                          </div>
+                          <span className="text-2xl md:text-5xl font-black text-bitwin-secondary transition-all">{visualMax}</span>
+                      </div>
 
-                </div>
-            )}
-         </div>
+                      {/* Active Powerup Button */}
+                      {config.gameMode === 'HACKER' && !activeUsed && (
+                          <div className="flex justify-center">
+                              <button 
+                                  onClick={activatePowerUp}
+                                  className="bg-bitwin-primary text-black font-black text-[10px] md:text-xs px-3 py-1 rounded-full uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-transform"
+                              >
+                                  USAR {ACTIVE_POWERUPS.find(a => a.id === selectedActive)?.name}
+                              </button>
+                          </div>
+                      )}
 
-         {/* RIGHT PANEL: HISTORY */}
-         <div className={`
-             flex-1 lg:flex-none
-             bg-black/10 
-             lg:bg-black/20 lg:w-96 lg:rounded-[2.5rem] lg:border-2 lg:border-white/10 lg:p-6 lg:shadow-xl
-             flex flex-col overflow-hidden
-         `}>
-             {/* History Header */}
-             <div className="bg-black/20 px-4 py-2 flex justify-between items-center border-b border-white/5 flex-none lg:bg-transparent lg:border-b lg:border-white/10 lg:mb-4 lg:px-0">
-                 <span className="text-white/40 font-bold text-xs uppercase tracking-widest">HISTÓRICO</span>
-                 <div className="text-xs font-mono text-white/40">
-                    <span className="text-white font-bold text-sm mr-1">{history.filter(h => !h.freeAttempt).length}</span> 
-                    TENTATIVAS
-                 </div>
-             </div>
+                      {/* Input Controls */}
+                      <div className="flex items-center justify-between gap-2 md:gap-4 bg-black/20 p-2 md:p-6 rounded-2xl border border-white/5">
+                          
+                          {/* Up Arrow Feedback */}
+                          <div className={`transition-all duration-300 flex flex-col items-center ${lastDirection === 'HIGHER' ? 'opacity-100 scale-105' : 'opacity-30 grayscale scale-90'}`}>
+                              <div className="bg-bitwin-accent text-bitwin-bg w-10 h-10 md:w-20 md:h-20 rounded-full flex items-center justify-center text-xl md:text-4xl shadow-sm">▲</div>
+                          </div>
 
-             {/* Scrollable List */}
-             <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
-                {history.length === 0 && (
-                    <div className="h-full flex flex-col items-center justify-center text-white/20 text-xs italic py-4">
-                        <span>Aguardando o primeiro chute...</span>
-                    </div>
-                )}
-                {history.map((h, idx) => (
-                    <div key={idx} className={`flex items-center justify-between bg-bitwin-bg/90 p-2 md:p-3 rounded-lg border ${h.freeAttempt ? 'border-yellow-400/50' : 'border-white/5'} animate-pop-in`}>
-                        <div className="flex items-center gap-3">
-                            <span className="text-white/30 font-mono text-[10px] w-4">#{idx + 1}</span>
-                            <span className="text-xl md:text-2xl font-black text-white">{h.value}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            {h.freeAttempt && <span className="text-[10px]">⚡</span>}
-                            {h.direction === 'HIGHER' && (
-                                <span className="text-bitwin-accent font-bold text-[10px] md:text-xs bg-bitwin-accent/10 px-2 py-0.5 rounded">▲ SOBE</span>
-                            )}
-                            {h.direction === 'LOWER' && (
-                                <span className="text-bitwin-secondary font-bold text-[10px] md:text-xs bg-bitwin-secondary/10 px-2 py-0.5 rounded">▼ DESCE</span>
-                            )}
-                            {h.direction === 'CORRECT' && (
-                                <span className="text-bitwin-primary font-bold text-[10px] md:text-xs">★ ACERTOU</span>
-                            )}
-                        </div>
-                    </div>
-                ))}
-                <div ref={historyEndRef} />
-             </div>
-         </div>
+                          {/* Form */}
+                          <form onSubmit={handleGuess} className="flex-1 flex flex-col gap-2">
+                              <input
+                                  type={selectedActive === PowerUpType.DOUBLE_THREAD && activeUsed ? "text" : "number"}
+                                  value={guess}
+                                  onChange={(e) => setGuess(e.target.value)}
+                                  placeholder="00"
+                                  disabled={isFrozen}
+                                  className="w-full bg-white text-bitwin-card text-center text-3xl md:text-6xl font-black rounded-xl h-14 md:h-24 outline-none focus:ring-4 ring-bitwin-primary transition-all disabled:bg-gray-400"
+                              />
+                              <Button type="submit" variant="primary" size="md" className="w-full py-2 text-lg md:text-xl shadow-md" disabled={!guess || isFrozen}>
+                                  CHUTAR
+                              </Button>
+                          </form>
+
+                          {/* Down Arrow Feedback */}
+                          <div className={`transition-all duration-300 flex flex-col items-center ${lastDirection === 'LOWER' ? 'opacity-100 scale-105' : 'opacity-30 grayscale scale-90'}`}>
+                              <div className="bg-bitwin-secondary text-white w-10 h-10 md:w-20 md:h-20 rounded-full flex items-center justify-center text-xl md:text-4xl shadow-sm">▼</div>
+                          </div>
+                      </div>
+                      
+                      {/* Feedback Text */}
+                      <div className="h-6 text-center">
+                          <p className={`font-bold uppercase text-xs md:text-sm animate-bounce ${lastDirection === 'HIGHER' ? 'text-bitwin-accent' : 'text-bitwin-secondary'}`}>
+                               {feedbackText}
+                          </p>
+                      </div>
+
+                  </div>
+              )}
+           </div>
+
+           {/* RIGHT PANEL: HISTORY */}
+           <div className={`
+               flex-1 lg:flex-none
+               bg-black/10 
+               lg:bg-black/20 lg:w-96 lg:rounded-[2.5rem] lg:border-2 lg:border-white/10 lg:p-6 lg:shadow-xl
+               flex flex-col overflow-hidden
+           `}>
+               {/* History Header */}
+               <div className="bg-black/20 px-4 py-2 flex justify-between items-center border-b border-white/5 flex-none lg:bg-transparent lg:border-b lg:border-white/10 lg:mb-4 lg:px-0">
+                   <span className="text-white/40 font-bold text-xs uppercase tracking-widest">HISTÓRICO</span>
+                   <div className="text-xs font-mono text-white/40">
+                      <span className="text-white font-bold text-sm mr-1">{history.filter(h => !h.freeAttempt).length}</span> 
+                      TENTATIVAS
+                   </div>
+               </div>
+
+               {/* Scrollable List */}
+               <div className="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
+                  {history.length === 0 && (
+                      <div className="h-full flex flex-col items-center justify-center text-white/20 text-xs italic py-4">
+                          <span>Aguardando o primeiro chute...</span>
+                      </div>
+                  )}
+                  {history.map((h, idx) => (
+                      <div key={idx} className={`flex items-center justify-between bg-bitwin-bg/90 p-2 md:p-3 rounded-lg border ${h.freeAttempt ? 'border-yellow-400/50' : 'border-white/5'} animate-pop-in`}>
+                          <div className="flex items-center gap-3">
+                              <span className="text-white/30 font-mono text-[10px] w-4">#{idx + 1}</span>
+                              <span className="text-xl md:text-2xl font-black text-white">{h.value}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                              {h.freeAttempt && <span className="text-[10px]">⚡</span>}
+                              {h.direction === 'HIGHER' && (
+                                  <span className="text-bitwin-accent font-bold text-[10px] md:text-xs bg-bitwin-accent/10 px-2 py-0.5 rounded">▲ SOBE</span>
+                              )}
+                              {h.direction === 'LOWER' && (
+                                  <span className="text-bitwin-secondary font-bold text-[10px] md:text-xs bg-bitwin-secondary/10 px-2 py-0.5 rounded">▼ DESCE</span>
+                              )}
+                              {h.direction === 'CORRECT' && (
+                                  <span className="text-bitwin-primary font-bold text-[10px] md:text-xs">★ ACERTOU</span>
+                              )}
+                          </div>
+                      </div>
+                  ))}
+                  <div ref={historyEndRef} />
+               </div>
+           </div>
+        </div>
+        
+        {/* --- MOBILE BOTTOM AD (Banner) --- */}
+        <div className="lg:hidden flex-none w-full h-[60px] bg-black/40 border-t border-white/10 flex items-center justify-center p-1">
+            <img 
+               src="https://placehold.co/320x50/2e003e/ffcc00?text=MOBILE+BANNER+AD" 
+               alt="Mobile Ad" 
+               className="h-full object-contain opacity-80"
+            />
+        </div>
+
+        <div className="hidden lg:block mt-8 text-white/10 text-xs font-bold font-mono text-center">
+          v2.07
+        </div>
       </div>
 
-      <div className="hidden lg:block mt-8 text-white/10 text-xs font-bold font-mono">
-        v2.06
+      {/* --- DESKTOP RIGHT AD (Skyscraper) --- */}
+      <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none sticky top-0 h-screen p-4 z-0">
+          <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group">
+             <img 
+               src="https://placehold.co/160x600/2e003e/ff0066?text=SKYSCRAPER+AD+R" 
+               alt="Advertisement Right" 
+               className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+             />
+          </div>
       </div>
+
     </div>
   );
 };

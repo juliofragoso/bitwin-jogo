@@ -274,52 +274,89 @@ export default function App() {
   if (gameState === GameState.LOBBY) {
     if (statusMessage) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-bitwin-bg text-white animate-fade-in p-6">
-               <div className="bg-bitwin-card border-4 border-white/10 p-10 rounded-3xl text-center shadow-2xl w-full max-w-md">
-                   <div className="text-6xl mb-6 animate-bounce">
-                        {myAvatar}
-                   </div>
-                   <h2 className="text-2xl font-bold mb-2 uppercase text-white/70">
-                       {statusMessage === 'AGUARDANDO O HOST INICIAR...' ? 'Conectado!' : 'Aguarde'}
-                   </h2>
-                   
-                   {statusMessage.startsWith('CÓDIGO') ? (
-                       <div className="my-6">
-                           <div className="flex items-center justify-center gap-3">
-                               <div className="text-5xl font-black text-bitwin-primary bg-black/20 p-4 rounded-xl border-2 border-dashed border-white/20 select-all tracking-widest">
-                                   {roomId}
-                               </div>
-                               <button 
-                                   onClick={handleCopyCode}
-                                   className="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white p-4 rounded-xl transition-all border-2 border-white/10 flex items-center justify-center h-20 w-20 text-3xl"
-                                   title="Copiar código"
-                               >
-                                   {isCopied ? '✅' : '📋'}
-                               </button>
-                           </div>
-                           {isCopied && <p className="text-green-400 text-sm font-bold mt-2 animate-pulse">Código copiado!</p>}
-                       </div>
-                   ) : (
-                       <div className="text-xl font-bold text-bitwin-primary my-6">
-                           {statusMessage}
-                       </div>
-                   )}
-                   
-                   {statusMessage.startsWith('CÓDIGO') && (
-                       <p className="text-white/50 text-sm">Compartilhe o código acima para jogar.</p>
-                   )}
-                   
-                   {statusMessage === 'AGUARDANDO O HOST INICIAR...' && (
-                        <p className="text-bitwin-accent text-xs mt-2 animate-pulse">Enviando sinal para o host...</p>
-                   )}
+            <div className="flex flex-row h-[100dvh] lg:min-h-screen lg:items-center lg:justify-between bg-bitwin-bg overflow-hidden lg:overflow-visible text-white">
+               
+               {/* --- DESKTOP LEFT AD (Skyscraper) --- */}
+               <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none sticky top-0 h-screen p-4 z-0">
+                  <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group">
+                     <img 
+                       src="https://placehold.co/160x600/2e003e/ffcc00?text=WAITING+AD+L" 
+                       alt="Advertisement Left" 
+                       className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+                     />
+                  </div>
+               </div>
 
-                   <button onClick={() => resetGame(true)} className="mt-8 text-red-400 font-bold underline hover:text-red-300">
-                       CANCELAR
-                   </button>
+               {/* --- CENTER CONTENT --- */}
+               <div className="flex-1 flex flex-col items-center justify-center h-full w-full relative z-10 p-6 overflow-y-auto animate-fade-in">
+                   <div className="bg-bitwin-card border-4 border-white/10 p-10 rounded-3xl text-center shadow-2xl w-full max-w-md flex-none">
+                       <div className="text-6xl mb-6 animate-bounce">
+                            {myAvatar}
+                       </div>
+                       <h2 className="text-2xl font-bold mb-2 uppercase text-white/70">
+                           {statusMessage === 'AGUARDANDO O HOST INICIAR...' ? 'Conectado!' : 'Aguarde'}
+                       </h2>
+                       
+                       {statusMessage.startsWith('CÓDIGO') ? (
+                           <div className="my-6">
+                               <div className="flex items-center justify-center gap-3">
+                                   <div className="text-5xl font-black text-bitwin-primary bg-black/20 p-4 rounded-xl border-2 border-dashed border-white/20 select-all tracking-widest">
+                                       {roomId}
+                                   </div>
+                                   <button 
+                                       onClick={handleCopyCode}
+                                       className="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white p-4 rounded-xl transition-all border-2 border-white/10 flex items-center justify-center h-20 w-20 text-3xl"
+                                       title="Copiar código"
+                                   >
+                                       {isCopied ? '✅' : '📋'}
+                                   </button>
+                               </div>
+                               {isCopied && <p className="text-green-400 text-sm font-bold mt-2 animate-pulse">Código copiado!</p>}
+                           </div>
+                       ) : (
+                           <div className="text-xl font-bold text-bitwin-primary my-6">
+                               {statusMessage}
+                           </div>
+                       )}
+                       
+                       {statusMessage.startsWith('CÓDIGO') && (
+                           <p className="text-white/50 text-sm">Compartilhe o código acima para jogar.</p>
+                       )}
+                       
+                       {statusMessage === 'AGUARDANDO O HOST INICIAR...' && (
+                            <p className="text-bitwin-accent text-xs mt-2 animate-pulse">Enviando sinal para o host...</p>
+                       )}
+
+                       <button onClick={() => resetGame(true)} className="mt-8 text-red-400 font-bold underline hover:text-red-300">
+                           CANCELAR
+                       </button>
+                   </div>
+                   
+                   <div className="mt-8 text-white/10 text-xs font-bold font-mono flex-none">
+                      v2.07
+                   </div>
+
+                    {/* --- MOBILE BOTTOM AD (Banner) --- */}
+                    <div className="lg:hidden flex-none w-full h-[60px] mt-4 flex items-center justify-center">
+                        <img 
+                           src="https://placehold.co/320x50/2e003e/ffcc00?text=MOBILE+WAITING+AD" 
+                           alt="Mobile Ad" 
+                           className="h-full object-contain opacity-80"
+                        />
+                    </div>
                </div>
-               <div className="mt-8 text-white/10 text-xs font-bold font-mono">
-                  v2.06
+
+               {/* --- DESKTOP RIGHT AD (Skyscraper) --- */}
+               <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none sticky top-0 h-screen p-4 z-0">
+                  <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group">
+                     <img 
+                       src="https://placehold.co/160x600/2e003e/ff0066?text=WAITING+AD+R" 
+                       alt="Advertisement Right" 
+                       className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+                     />
+                  </div>
                </div>
+
             </div>
         )
     }
