@@ -300,11 +300,11 @@ export default function App() {
   if (gameState === GameState.LOBBY) {
     if (statusMessage) {
         return (
-            <div className="flex flex-row h-[100dvh] lg:min-h-screen lg:items-center lg:justify-between bg-bitwin-bg overflow-hidden lg:overflow-visible text-white">
+            <div className="bg-cosmic min-h-[100dvh] flex flex-col lg:flex-row items-center justify-between overflow-hidden relative">
                
                {/* --- DESKTOP LEFT AD (Skyscraper) --- */}
-               <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none sticky top-0 h-screen p-4 z-0">
-                  <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group">
+               <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none z-10 p-4 h-screen sticky top-0">
+                  <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group backdrop-blur-sm">
                      <img 
                        src="https://placehold.co/160x600/2e003e/ffcc00?text=WAITING+AD+L" 
                        alt="Advertisement Left" 
@@ -313,68 +313,73 @@ export default function App() {
                   </div>
                </div>
 
-               {/* --- CENTER CONTENT --- */}
-               <div className="flex-1 flex flex-col items-center justify-center h-full w-full relative z-10 p-6 overflow-y-auto animate-fade-in">
-                   <div className="bg-bitwin-card border-4 border-white/10 p-10 rounded-3xl text-center shadow-2xl w-full max-w-md flex-none">
-                       <div className="text-6xl mb-6 animate-bounce">
-                            {myAvatar}
+               {/* --- CENTER CONTENT (Updated to Cosmic/Glass Style) --- */}
+               <div className="flex-1 flex flex-col items-center justify-center h-full w-full relative z-20 p-6 overflow-y-auto animate-fade-in">
+                   
+                   <div className="glass-panel p-10 w-full max-w-md flex flex-col items-center text-center shadow-2xl relative">
+                       
+                       {/* Avatar Ring */}
+                       <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#4cc9f0] to-[#4361ee] p-0.5 shadow-glow-gold mb-6 animate-bounce-slight">
+                           <div className="w-full h-full bg-black/10 rounded-full flex items-center justify-center text-6xl shadow-inner backdrop-blur-sm">
+                               {myAvatar}
+                           </div>
                        </div>
-                       <h2 className="text-2xl font-bold mb-2 uppercase text-white/70">
-                           {statusMessage === 'AGUARDANDO O HOST INICIAR...' ? 'Conectado!' : 'Aguarde'}
+
+                       {/* Status Title */}
+                       <h2 className="text-xl font-bold mb-4 uppercase text-white/80 tracking-widest">
+                           {statusMessage === 'AGUARDANDO O HOST INICIAR...' ? 'Conectado!' : 'Sua Sala'}
                        </h2>
                        
                        {statusMessage.startsWith('CÓDIGO') ? (
-                           <div className="my-6">
-                               <div className="flex items-center justify-center gap-3">
-                                   <div className="text-5xl font-black text-bitwin-primary bg-black/20 p-4 rounded-xl border-2 border-dashed border-white/20 select-all tracking-widest">
-                                       {roomId}
+                           <div className="w-full mb-8">
+                               <div className="bg-[#150029]/80 border-2 border-[#3c096c] rounded-2xl p-4 flex flex-col items-center gap-2 shadow-inner-highlight relative overflow-hidden group">
+                                   <div className="text-[10px] text-white/30 uppercase font-black tracking-[0.3em]">Código da Sala</div>
+                                   <div className="flex items-center gap-3">
+                                      <span className="text-5xl font-brand text-bitwin-primary drop-shadow-md tracking-wider">
+                                          {roomId}
+                                      </span>
+                                      <button 
+                                          onClick={handleCopyCode}
+                                          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors border border-white/10 active:scale-95"
+                                      >
+                                          {isCopied ? '✓' : '📋'}
+                                      </button>
                                    </div>
-                                   <button 
-                                       onClick={handleCopyCode}
-                                       className="bg-white/10 hover:bg-white/20 active:bg-white/30 text-white p-4 rounded-xl transition-all border-2 border-white/10 flex items-center justify-center h-20 w-20 text-3xl"
-                                       title="Copiar código"
-                                   >
-                                       {isCopied ? '✅' : '📋'}
-                                   </button>
                                </div>
-                               {isCopied && <p className="text-green-400 text-sm font-bold mt-2 animate-pulse">Código copiado!</p>}
+                               <p className="text-white/40 text-xs mt-3 font-bold animate-pulse">Compartilhe o código para jogar</p>
                            </div>
                        ) : (
-                           <div className="text-xl font-bold text-bitwin-primary my-6">
+                           <div className="text-xl font-bold text-bitwin-primary my-6 animate-pulse">
                                {statusMessage}
                            </div>
                        )}
-                       
-                       {statusMessage.startsWith('CÓDIGO') && (
-                           <p className="text-white/50 text-sm">Compartilhe o código acima para jogar.</p>
-                       )}
-                       
+
                        {statusMessage === 'AGUARDANDO O HOST INICIAR...' && (
-                            <p className="text-bitwin-accent text-xs mt-2 animate-pulse">Enviando sinal para o host...</p>
+                           <div className="flex gap-2 justify-center mb-6">
+                              <span className="w-2 h-2 bg-white rounded-full animate-bounce"></span>
+                              <span className="w-2 h-2 bg-white rounded-full animate-bounce delay-100"></span>
+                              <span className="w-2 h-2 bg-white rounded-full animate-bounce delay-200"></span>
+                           </div>
                        )}
 
-                       <button onClick={() => resetGame(true)} className="mt-8 text-red-400 font-bold underline hover:text-red-300">
-                           CANCELAR
+                       <button onClick={() => resetGame(true)} className="text-white/30 font-bold text-xs uppercase hover:text-red-400 transition-colors border-b border-transparent hover:border-red-400 pb-0.5">
+                           Cancelar e Voltar
                        </button>
                    </div>
                    
                    <div className="mt-8 text-white/10 text-xs font-bold font-mono flex-none">
-                      v2.07
+                      v2.13
                    </div>
 
                     {/* --- MOBILE BOTTOM AD (Banner) --- */}
-                    <div className="lg:hidden flex-none w-full h-[60px] mt-4 flex items-center justify-center">
-                        <img 
-                           src="https://placehold.co/320x50/2e003e/ffcc00?text=MOBILE+WAITING+AD" 
-                           alt="Mobile Ad" 
-                           className="h-full object-contain opacity-80"
-                        />
+                    <div className="lg:hidden flex-none w-full h-[60px] mt-4 flex items-center justify-center bg-black/20 border border-white/5 rounded-lg">
+                        <span className="text-white/20 text-[10px] uppercase font-bold">Ad Banner</span>
                     </div>
                </div>
 
                {/* --- DESKTOP RIGHT AD (Skyscraper) --- */}
-               <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none sticky top-0 h-screen p-4 z-0">
-                  <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group">
+               <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none z-10 p-4 h-screen sticky top-0">
+                  <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group backdrop-blur-sm">
                      <img 
                        src="https://placehold.co/160x600/2e003e/ff0066?text=WAITING+AD+R" 
                        alt="Advertisement Right" 

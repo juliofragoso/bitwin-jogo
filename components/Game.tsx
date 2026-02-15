@@ -11,8 +11,16 @@ interface GameProps {
   myAvatar: string;
 }
 
-const NEED_HIGHER_MESSAGES = ["SOBE!", "MAIS!", "BAIXO!", "PRA CIMA!"];
-const NEED_LOWER_MESSAGES = ["DESCE!", "MENOS!", "ALTO!", "PRA BAIXO!"];
+const NEED_HIGHER_MESSAGES = [
+  "SOBE!", "MAIS!", "TÁ BAIXO!", "PRA CIMA!", 
+  "CHUTA ALTO!", "CORAGEM!", "SOBE A SERRA!", "TÁ FRIO...", 
+  "AUMENTA AÍ!", "MAIS POTÊNCIA!", "É PRA CIMA!"
+];
+const NEED_LOWER_MESSAGES = [
+  "DESCE!", "MENOS!", "TÁ ALTO!", "PRA BAIXO!", 
+  "CALMA LÁ!", "BAIXA A BOLA!", "EXAGEROU!", "TÁ QUENTE!", 
+  "DIMINUI ISSO!", "SEGURA O DEDO!", "MENOS AÍ!"
+];
 
 // Power-up Definitions
 const ACTIVE_POWERUPS = [
@@ -249,21 +257,21 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                </div>
            ) : (
              <>
-               {/* RANGE & TARGET */}
+               {/* RANGE & TARGET (BIGGER) */}
                <div className="flex-none pt-2 pb-2 w-full">
-                    <div className="flex justify-center items-end gap-6 text-center mb-1 font-brand">
-                        <span className="text-4xl text-bitwin-primary drop-shadow-[0_2px_0_rgba(0,0,0,0.3)]">{visualMin}</span>
-                        <div className="flex flex-col justify-end pb-1">
-                             <span className="text-4xl text-white drop-shadow-glow-gold">?</span>
+                    <div className="flex justify-center items-end gap-4 text-center mb-1 font-brand">
+                        <span className="text-6xl text-bitwin-primary drop-shadow-[0_4px_0_rgba(0,0,0,0.3)]">{visualMin}</span>
+                        <div className="flex flex-col justify-end pb-3">
+                             <span className="text-4xl text-white/50 drop-shadow-glow-gold">?</span>
                         </div>
-                        <span className="text-4xl text-bitwin-cta drop-shadow-[0_2px_0_rgba(0,0,0,0.3)]">{visualMax}</span>
+                        <span className="text-6xl text-bitwin-cta drop-shadow-[0_4px_0_rgba(0,0,0,0.3)]">{visualMax}</span>
                     </div>
                     
-                    {/* FEEDBACK PILL */}
-                    <div className="h-6 flex items-center justify-center mb-2">
+                    {/* FEEDBACK PILL (RESERVED SPACE) */}
+                    <div className="h-10 flex items-center justify-center mb-2">
                         {feedbackText && (
-                            <div className="bg-black/40 px-3 py-0.5 rounded-full border border-white/10 animate-pop-in">
-                                <span className={`font-black uppercase text-xs tracking-widest ${lastDirection === 'HIGHER' ? 'text-green-400' : 'text-red-400'}`}>
+                            <div className="bg-black/60 px-4 py-1 rounded-full border border-white/20 animate-pop-in shadow-lg backdrop-blur-sm">
+                                <span className={`font-black uppercase text-sm tracking-widest ${lastDirection === 'HIGHER' ? 'text-green-400' : lastDirection === 'LOWER' ? 'text-red-400' : 'text-white'}`}>
                                     {feedbackText}
                                 </span>
                             </div>
@@ -301,7 +309,8 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                )}
 
                {/* HISTORY (Horizontal Scrollable Strip) */}
-               <div className="w-full h-20 bg-black/20 border border-white/10 rounded-xl mb-3 flex items-center px-2 gap-2 overflow-x-auto custom-scrollbar relative">
+               {/* Container with reserved height and custom thin scrollbar */}
+               <div className="w-full h-[5.5rem] bg-black/20 border-b-2 border-[#5a189a] rounded-t-xl mb-3 flex items-center px-2 gap-2 overflow-x-auto custom-scrollbar relative">
                    {history.length === 0 && (
                        <div className="w-full text-center text-white/20 text-xs italic">Palpites...</div>
                    )}
@@ -320,13 +329,13 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                {/* KEYPAD */}
                <div className="grid grid-cols-3 gap-2 w-full max-w-[320px] mb-2">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                      <Button key={num} variant="purple" onClick={() => handleNumClick(num)} disabled={isFrozen} className="text-3xl h-14 rounded-2xl shadow-lg">
+                      <Button key={num} variant="purple" onClick={() => handleNumClick(num)} disabled={isFrozen} className="text-3xl h-14 rounded-2xl shadow-lg active:scale-95 transition-transform">
                           {num}
                       </Button>
                   ))}
-                  <Button variant="danger" onClick={handleDelete} disabled={isFrozen} className="text-xl h-14 rounded-2xl shadow-lg">⌫</Button>
-                  <Button variant="purple" onClick={() => handleNumClick(0)} disabled={isFrozen} className="text-3xl h-14 rounded-2xl shadow-lg">0</Button>
-                  <Button variant="success" onClick={handleGuessSubmit} disabled={!guess || isFrozen} className="text-xl h-14 rounded-2xl shadow-lg bg-gradient-to-b from-green-400 to-green-700 border-green-400">✓</Button>
+                  <Button variant="danger" onClick={handleDelete} disabled={isFrozen} className="text-xl h-14 rounded-2xl shadow-lg active:scale-95 transition-transform">⌫</Button>
+                  <Button variant="purple" onClick={() => handleNumClick(0)} disabled={isFrozen} className="text-3xl h-14 rounded-2xl shadow-lg active:scale-95 transition-transform">0</Button>
+                  <Button variant="success" onClick={handleGuessSubmit} disabled={!guess || isFrozen} className="text-xl h-14 rounded-2xl shadow-lg bg-gradient-to-b from-green-400 to-green-700 border-green-400 active:scale-95 transition-transform">✓</Button>
                </div>
 
              </>

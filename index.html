@@ -34,8 +34,8 @@
               'float': 'float 6s ease-in-out infinite',
               'float-delayed': 'float 6s ease-in-out 3s infinite',
               'shine': 'shine 3s infinite',
-              'stars': 'starMove 100s linear infinite',
-              'stars-fast': 'starMove 50s linear infinite',
+              'stars': 'starMove 60s linear infinite', /* Faster and smoother */
+              'stars-fast': 'starMove 30s linear infinite',
             },
             keyframes: {
               popIn: {
@@ -52,7 +52,7 @@
               },
               starMove: {
                 '0%': { backgroundPosition: '0 0' },
-                '100%': { backgroundPosition: '0 1000px' },
+                '100%': { backgroundPosition: '0 600px' }, /* Adjusted for pattern loop */
               }
             },
             boxShadow: {
@@ -86,11 +86,11 @@
         overflow: hidden;
       }
       
-      /* Stars Layer 1 (Small & Slow) */
+      /* Stars Layer 1 (Small) */
       .bg-cosmic::before {
         content: "";
         position: fixed;
-        top: -1000px; left: 0; right: 0; bottom: 0;
+        top: -50%; left: 0; right: 0; bottom: -50%; /* Extend to allow movement */
         background-image: 
           radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
           radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
@@ -99,6 +99,7 @@
           radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
           radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
         background-size: 200px 200px;
+        background-repeat: repeat;
         animation: starMove 60s linear infinite;
         opacity: 0.6;
         z-index: -2;
@@ -111,12 +112,13 @@
       .bg-cosmic::after {
         content: "";
         position: fixed;
-        top: -1000px; left: 0; right: 0; bottom: 0;
+        top: -50%; left: 0; right: 0; bottom: -50%;
         background-image: 
           radial-gradient(3px 3px at 50px 100px, #ffffff, rgba(0,0,0,0)),
           radial-gradient(3px 3px at 150px 200px, #a0c4ff, rgba(0,0,0,0)),
           radial-gradient(3px 3px at 250px 50px, #ffffff, rgba(0,0,0,0));
-        background-size: 350px 350px;
+        background-size: 300px 300px;
+        background-repeat: repeat;
         animation: starMove 30s linear infinite;
         opacity: 0.4;
         z-index: -1;
@@ -136,8 +138,9 @@
         background: linear-gradient(180deg, #FFEA00 20%, #FF9E00 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        /* Replaced stroke simulation with drop shadows for depth without the black outline */
-        filter: drop-shadow(0px 4px 0px #b45309) drop-shadow(0px 0px 15px rgba(255, 158, 0, 0.6));
+        /* No stroke, pure shadow */
+        -webkit-text-stroke: 0;
+        filter: drop-shadow(0px 4px 0px #b45309) drop-shadow(0px 0px 25px rgba(255, 158, 0, 0.7));
         position: relative;
         z-index: 2;
       }
@@ -175,17 +178,22 @@
           pointer-events: none;
       }
 
-      /* Custom scrollbar */
-      ::-webkit-scrollbar {
-        width: 6px;
+      /* Thin Custom Scrollbar */
+      .custom-scrollbar::-webkit-scrollbar {
+        height: 6px;
       }
-      ::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1); 
-        border-radius: 5px;
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.2); 
+        border-radius: 10px;
+        margin: 0 10px;
       }
-      ::-webkit-scrollbar-thumb {
+      .custom-scrollbar::-webkit-scrollbar-thumb {
         background: #5a189a; 
-        border-radius: 5px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #7b2cbf;
       }
       
       .glitch-effect {

@@ -57,7 +57,6 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
 
   const LogoSection = () => (
       <div className="relative z-10 flex flex-col items-center mb-8 transform hover:scale-105 transition-transform duration-500">
-          {/* Logo without the stroke class, relying on global CSS drop-shadows */}
           <h1 className="text-7xl md:text-8xl logo-3d tracking-wide text-center leading-none">
               BITWIN
           </h1>
@@ -144,12 +143,12 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
                                 )}
                             </div>
 
-                            {/* Input (Right) */}
+                            {/* Input (Right) - FLEX-1 ensures it fills width */}
                             <input
                                 type="text"
                                 value={playerName}
                                 onChange={(e) => setPlayerName(e.target.value.slice(0, 15))}
-                                className="w-full h-14 bg-[#10002b]/60 border-2 border-[#3c096c] focus:border-bitwin-primary rounded-2xl px-4 text-center text-white text-xl font-bold placeholder-white/20 outline-none transition-all shadow-inner"
+                                className="flex-1 h-16 bg-[#10002b]/60 border-2 border-[#3c096c] focus:border-bitwin-primary rounded-2xl px-4 text-center text-white text-xl font-bold placeholder-white/20 outline-none transition-all shadow-inner"
                                 placeholder="Seu Nome"
                             />
 
