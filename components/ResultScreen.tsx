@@ -79,14 +79,24 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
       <div className="flex gap-4 w-full max-w-md mb-8 items-end justify-center">
           {/* Opponent */}
           <div className={`glass-panel flex-1 p-4 flex flex-col items-center transition-transform ${!iWon && !isDraw ? 'scale-110 z-10 border-bitwin-success shadow-glow-gold' : 'opacity-70 scale-95'}`}>
-              <div className="text-xs font-bold uppercase text-white/50 mb-1">{opponentName}</div>
+              <div className="flex items-center gap-2 mb-1 opacity-50">
+                  <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px]">
+                      {opponentAvatar}
+                  </div>
+                  <div className="text-xs font-bold uppercase">{opponentName}</div>
+              </div>
               <div className="text-4xl font-brand text-white">{opponentAttempts}</div>
               <div className="text-[10px] text-white/40 uppercase mt-1">Tentativas</div>
           </div>
 
           {/* Me */}
           <div className={`glass-panel flex-1 p-6 flex flex-col items-center transition-transform ${iWon ? 'scale-110 z-10 border-bitwin-primary shadow-glow-gold' : isDraw ? 'border-white' : 'opacity-70 scale-95'}`}>
-              <div className="text-sm font-bold uppercase text-white/50 mb-1">Você</div>
+              <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs">
+                      {myAvatar}
+                  </div>
+                  <div className="text-sm font-bold uppercase text-white/50">Você</div>
+              </div>
               <div className="text-6xl font-brand text-bitwin-primary drop-shadow-sm">{myAttempts}</div>
               <div className="text-[10px] text-white/40 uppercase mt-1">Tentativas</div>
           </div>

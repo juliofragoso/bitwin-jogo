@@ -97,13 +97,6 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
       setGuess(prev => prev.slice(0, -1));
   };
 
-  const handleComma = () => {
-      if (isFrozen) return;
-      if (!guess.includes(',')) {
-          setGuess(prev => prev + ',');
-      }
-  };
-
   const activatePowerUp = () => {
       if (activeUsed || !selectedActive || isFrozen) return;
       setActiveUsed(true);
