@@ -26,11 +26,21 @@
             animation: {
               'bounce-slight': 'bounce 2s infinite',
               'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              'arrow-up': 'bounceUp 1s infinite',
+              'arrow-down': 'bounceDown 1s infinite',
             },
             keyframes: {
               popIn: {
                 '0%': { transform: 'scale(0.8)', opacity: '0' },
                 '100%': { transform: 'scale(1)', opacity: '1' },
+              },
+              bounceUp: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-15px)' },
+              },
+              bounceDown: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(15px)' },
               }
             }
           },
@@ -60,6 +70,16 @@
       ::-webkit-scrollbar-thumb {
         background: #ffcc00; 
         border-radius: 5px;
+      }
+      
+      /* Hide Input Spinners (Arrows) */
+      .no-spinner::-webkit-inner-spin-button,
+      .no-spinner::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .no-spinner {
+        -moz-appearance: textfield;
       }
       
       /* Power-up Effects */
