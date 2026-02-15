@@ -296,27 +296,36 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
       {/* --- CENTER GAME AREA --- */}
       <div className="flex-1 flex flex-col h-full max-w-7xl mx-auto w-full relative z-10 lg:py-2">
 
-        {/* 1. HEADER - Compacted for Desktop */}
+        {/* 1. HEADER - BRAND ROW (Mobile Only) */}
+        <div className="flex-none flex justify-center py-2 lg:hidden">
+            <div className="bg-bitwin-bg px-4 rounded-b-xl border-x-2 border-b-2 border-white/10 shadow-lg">
+                <h1 className="text-3xl font-black text-bitwin-primary tracking-widest drop-shadow-[0_2px_0_rgba(0,0,0,0.5)]">BITWIN</h1>
+            </div>
+        </div>
+
+        {/* 1. HEADER - PLAYER BAR */}
         <div className={`
             flex-none w-full z-20 relative
-            bg-bitwin-card/90 border-b-2 border-white/10 px-3 py-2 shadow-md
+            bg-bitwin-card/90 border-b-2 border-white/10 px-4 py-2 shadow-md
             lg:bg-bitwin-card/50 lg:border-4 lg:border-white/10 lg:rounded-[2rem] lg:px-6 lg:py-3 lg:mb-4 lg:w-full lg:shadow-none
             flex justify-between items-center
         `}>
-           {/* BRAND LOGO - Lowered for mobile visibility */}
-           <div className="absolute top-0 left-1/2 -translate-x-1/2 mt-2 lg:mt-0 lg:-translate-y-2 z-30">
+           {/* Desktop Logo (Hidden on Mobile) */}
+           <div className="hidden lg:block absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 z-30">
                 <div className="bg-bitwin-bg px-4 rounded-b-xl border-x-2 border-b-2 border-white/10 shadow-lg">
-                    <h1 className="text-xl lg:text-3xl font-black text-bitwin-primary tracking-widest drop-shadow-[0_2px_0_rgba(0,0,0,0.5)]">BITWIN</h1>
+                    <h1 className="text-3xl font-black text-bitwin-primary tracking-widest drop-shadow-[0_2px_0_rgba(0,0,0,0.5)]">BITWIN</h1>
                 </div>
            </div>
 
-           {/* Me */}
-           <div className="flex items-center gap-3 lg:gap-4 max-w-[40%]">
-               <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-full bg-bitwin-primary flex items-center justify-center border-2 lg:border-4 border-white text-2xl lg:text-4xl shadow-lg relative z-10">
+           {/* Me - CLEAN LOOK (No Circle) */}
+           <div className="flex items-center gap-2 lg:gap-4 max-w-[40%]">
+               {/* Just Emoji */}
+               <div className="text-3xl lg:text-5xl filter drop-shadow-md">
                    {myAvatar}
                </div>
+               {/* Text Info */}
                <div className="overflow-hidden text-left">
-                   <div className="font-black text-bitwin-primary text-base lg:text-2xl uppercase truncate drop-shadow-md">{myPlayerName}</div>
+                   <div className="font-black text-white text-base lg:text-2xl uppercase truncate drop-shadow-md">{myPlayerName}</div>
                    {config.gameMode === 'HACKER' && (
                        <div className="flex gap-2 text-xs lg:text-base text-white/60">
                            <span>{ACTIVE_POWERUPS.find(a => a.id === selectedActive)?.icon}</span>
@@ -326,17 +335,19 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                </div>
            </div>
 
-           {/* Center VS */}
-           <div className="absolute left-1/2 transform -translate-x-1/2 text-center top-1/2 -translate-y-1/2 mt-3 lg:mt-0">
-               <div className="text-3xl lg:text-6xl font-black italic text-white/10 lg:text-white/20">VS</div>
+           {/* Center VS - ROUNDED BAR ADDED */}
+           <div className="absolute left-1/2 transform -translate-x-1/2 text-center top-1/2 -translate-y-1/2">
+               <div className="bg-black/30 border-2 border-white/10 rounded-full px-3 py-1 lg:px-4 lg:py-1 backdrop-blur-sm">
+                   <div className="text-xl lg:text-3xl font-black italic text-white/50 leading-none">VS</div>
+               </div>
            </div>
 
-           {/* Opponent */}
-           <div className="flex items-center justify-end gap-3 lg:gap-4 max-w-[40%]">
+           {/* Opponent - CLEAN LOOK (No Circle) */}
+           <div className="flex items-center justify-end gap-2 lg:gap-4 max-w-[40%]">
                <div className="text-right overflow-hidden">
-                  <div className="font-black text-bitwin-secondary text-base lg:text-2xl uppercase truncate drop-shadow-md">{opponentName}</div>
+                  <div className="font-black text-white text-base lg:text-2xl uppercase truncate drop-shadow-md">{opponentName}</div>
                </div>
-               <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-full bg-bitwin-secondary flex items-center justify-center border-2 lg:border-4 border-white text-2xl lg:text-4xl shadow-lg relative z-10">
+               <div className="text-3xl lg:text-5xl filter drop-shadow-md">
                    {opponentAvatar}
                </div>
            </div>
@@ -377,7 +388,6 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                   <div className="w-full max-w-xl flex flex-col gap-1 lg:gap-4">
                       
                       {/* RANGE DISPLAY (THE TARGET) */}
-                      {/* BOTTOM ALIGNMENT CHANGE: items-end, and line-height tweaks */}
                       <div className="flex justify-center items-end gap-4 lg:gap-8 text-center py-2 lg:py-4">
                           <span className="text-6xl lg:text-7xl font-black text-bitwin-accent transition-all drop-shadow-lg leading-none mb-1 lg:mb-2">{visualMin}</span>
                           <div className="flex flex-col items-center justify-end mx-2">
@@ -387,7 +397,7 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                           <span className="text-6xl lg:text-7xl font-black text-bitwin-secondary transition-all drop-shadow-lg leading-none mb-1 lg:mb-2">{visualMax}</span>
                       </div>
 
-                      {/* FEEDBACK AREA (Now static and centered) */}
+                      {/* FEEDBACK AREA */}
                       <div className="h-10 lg:h-14 flex items-center justify-center">
                           <p className={`font-black uppercase text-2xl lg:text-4xl animate-bounce tracking-wider ${lastDirection === 'HIGHER' ? 'text-bitwin-accent' : 'text-bitwin-secondary'}`}>
                               {feedbackText}
@@ -406,34 +416,34 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                           </div>
                       )}
 
-                      {/* INPUT CONTROLS (GAMEPAD STYLE) */}
+                      {/* INPUT CONTROLS (Narrower input, Bigger arrows) */}
                       <div className="relative">
                           {/* Container */}
-                          <div className="flex items-center justify-between gap-2 lg:gap-4 bg-black/30 p-2 lg:p-6 rounded-[2rem] lg:rounded-[3rem] border-4 border-white/10 shadow-inner">
+                          <div className="flex items-center justify-center gap-6 lg:gap-8 bg-black/30 p-4 lg:p-6 rounded-[2rem] lg:rounded-[3rem] border-4 border-white/10 shadow-inner">
                               
-                              {/* Up Arrow Feedback (Animated) */}
-                              <div className={`transition-all duration-300 flex flex-col items-center flex-none w-14 lg:w-24 ${lastDirection === 'HIGHER' ? 'opacity-100' : 'opacity-20 grayscale'}`}>
-                                  <div className={`bg-bitwin-accent text-bitwin-bg w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-2xl lg:text-4xl shadow-[0_0_20px_#00ff99] border-4 border-white ${lastDirection === 'HIGHER' ? 'animate-arrow-up' : ''}`}>▲</div>
+                              {/* Up Arrow Feedback (Huge) */}
+                              <div className={`transition-all duration-300 flex flex-col items-center flex-none ${lastDirection === 'HIGHER' ? 'opacity-100' : 'opacity-20 grayscale'}`}>
+                                  <div className={`text-bitwin-accent text-5xl lg:text-7xl filter drop-shadow-[0_0_10px_#00ff99] ${lastDirection === 'HIGHER' ? 'animate-arrow-up' : ''}`}>▲</div>
                               </div>
 
-                              {/* Form */}
-                              <form onSubmit={handleGuess} className="flex-1 flex flex-col gap-2 lg:gap-4">
+                              {/* Form - Narrow Width */}
+                              <form onSubmit={handleGuess} className="flex-none flex flex-col items-center gap-2">
                                   <input
                                       type={selectedActive === PowerUpType.DOUBLE_THREAD && activeUsed ? "text" : "number"}
                                       value={guess}
                                       onChange={(e) => setGuess(e.target.value)}
                                       placeholder="00"
                                       disabled={isFrozen}
-                                      className="no-spinner w-full bg-white text-bitwin-card text-center text-6xl lg:text-7xl font-black rounded-xl lg:rounded-2xl h-16 lg:h-24 outline-none focus:ring-4 lg:focus:ring-8 ring-bitwin-primary transition-all disabled:bg-gray-400 placeholder-gray-300 shadow-inner"
+                                      className="no-spinner w-32 lg:w-48 bg-white text-bitwin-card text-center text-6xl lg:text-7xl font-black rounded-xl lg:rounded-2xl h-16 lg:h-24 outline-none focus:ring-4 lg:focus:ring-8 ring-bitwin-primary transition-all disabled:bg-gray-400 placeholder-gray-300 shadow-inner"
                                   />
-                                  <Button type="submit" variant="primary" size="lg" className="w-full py-3 lg:py-5 text-xl lg:text-3xl shadow-xl" disabled={!guess || isFrozen}>
+                                  <Button type="submit" variant="primary" size="md" className="w-full py-2 text-xl shadow-xl" disabled={!guess || isFrozen}>
                                       CHUTAR
                                   </Button>
                               </form>
 
-                              {/* Down Arrow Feedback (Animated) */}
-                              <div className={`transition-all duration-300 flex flex-col items-center flex-none w-14 lg:w-24 ${lastDirection === 'LOWER' ? 'opacity-100' : 'opacity-20 grayscale'}`}>
-                                  <div className={`bg-bitwin-secondary text-white w-12 h-12 lg:w-20 lg:h-20 rounded-full flex items-center justify-center text-2xl lg:text-4xl shadow-[0_0_20px_#ff0066] border-4 border-white ${lastDirection === 'LOWER' ? 'animate-arrow-down' : ''}`}>▼</div>
+                              {/* Down Arrow Feedback (Huge) */}
+                              <div className={`transition-all duration-300 flex flex-col items-center flex-none ${lastDirection === 'LOWER' ? 'opacity-100' : 'opacity-20 grayscale'}`}>
+                                  <div className={`text-bitwin-secondary text-5xl lg:text-7xl filter drop-shadow-[0_0_10px_#ff0066] ${lastDirection === 'LOWER' ? 'animate-arrow-down' : ''}`}>▼</div>
                               </div>
                           </div>
                       </div>
@@ -479,7 +489,8 @@ export const Game: React.FC<GameProps> = ({ config, onFinish, gameState, myPlaye
                               
                               <span className="text-white/30 font-mono text-[8px] absolute top-1 left-2">#{idx + 1}</span>
                               
-                              <span className={`text-2xl lg:text-3xl font-black ${
+                              {/* Increased Font Size for History Numbers */}
+                              <span className={`text-4xl lg:text-5xl font-black ${
                                   h.direction === 'HIGHER' ? 'text-bitwin-accent' : 
                                   h.direction === 'LOWER' ? 'text-bitwin-secondary' : 'text-bitwin-primary'
                               }`}>

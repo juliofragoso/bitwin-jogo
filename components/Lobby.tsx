@@ -85,12 +85,12 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
       {/* --- CENTER CONTENT --- */}
       <div className="flex-1 flex flex-col items-center justify-start lg:justify-center h-full w-full relative z-10 p-4 pt-8 lg:p-4 overflow-y-auto custom-scrollbar">
         
-        {/* Logo Area - Scaled down for mobile & desktop */}
+        {/* Logo Area - Scaled up for mobile */}
         <div className="mb-8 lg:mb-8 transform rotate-[-2deg] flex-none">
-          <h1 className="text-6xl md:text-8xl lg:text-8xl font-black text-bitwin-primary drop-shadow-[0_4px_0_#b38f00] lg:drop-shadow-[0_6px_0_#b38f00] stroke-black leading-none" style={{ WebkitTextStroke: '2px #2e003e' }}>
+          <h1 className="text-7xl md:text-8xl lg:text-8xl font-black text-bitwin-primary drop-shadow-[0_4px_0_#b38f00] lg:drop-shadow-[0_6px_0_#b38f00] stroke-black leading-none" style={{ WebkitTextStroke: '2px #2e003e' }}>
             BITWIN
           </h1>
-          <div className="bg-bitwin-secondary text-white font-bold text-sm lg:text-xl px-4 py-1 lg:px-5 lg:py-1 rounded-full inline-block transform rotate-[4deg] -mt-4 lg:-mt-4 border-2 lg:border-4 border-white/20 shadow-xl">
+          <div className="bg-bitwin-secondary text-white font-bold text-base lg:text-xl px-5 py-2 lg:px-5 lg:py-1 rounded-full inline-block transform rotate-[4deg] -mt-4 lg:-mt-4 border-2 lg:border-4 border-white/20 shadow-xl">
             QUEM CHUTA MELHOR?
           </div>
         </div>
