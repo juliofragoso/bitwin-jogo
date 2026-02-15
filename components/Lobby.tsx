@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './Button';
 import { socketService } from '../services/socketService';
 import { GameMode } from '../types';
@@ -8,7 +8,7 @@ interface LobbyProps {
   onJoinGame: (roomId: string, playerName: string, avatar: string) => void;
 }
 
-const AVATARS = ['🤖', '😍', '🔥', '😒', '🥱', '🥶', '👺', '👽', '💩'];
+const AVATARS = ['🤖', '😍', '🔥', '😒', '🥱', '🥶', '👺', '👽', '💩', '🦄', '🐲', '👻'];
 
 export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
   const [playerName, setPlayerName] = useState('');
@@ -17,6 +17,31 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
   const [joinCode, setJoinCode] = useState('');
   const [mode, setMode] = useState<'menu' | 'join' | 'create'>('menu');
   const [selectedGameMode, setSelectedGameMode] = useState<GameMode>('CLASSIC');
+
+  // Ad Manager Logic
+  const [versionClickCount, setVersionClickCount] = useState(0);
+  const [showAdManager, setShowAdManager] = useState(false);
+  const [adCode, setAdCode] = useState('');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('BITWIN_AD_CODE');
+    if (saved) setAdCode(saved);
+  }, []);
+
+  const handleVersionClick = () => {
+    setVersionClickCount(prev => prev + 1);
+    if (versionClickCount + 1 >= 10) {
+      setShowAdManager(true);
+      setVersionClickCount(0);
+    }
+  };
+
+  const saveAdCode = () => {
+    localStorage.setItem('BITWIN_AD_CODE', adCode);
+    alert('Código salvo! Recarregue a página para ativar.');
+    setShowAdManager(false);
+    window.location.reload();
+  };
 
   const handleCreate = () => {
     if (!playerName.trim()) return;
@@ -30,194 +55,194 @@ export const Lobby: React.FC<LobbyProps> = ({ onCreateGame, onJoinGame }) => {
     }
   };
 
-  const NameInput = () => (
-    <div className="space-y-2 lg:space-y-3 text-left w-full relative">
-      <label className="text-sm lg:text-lg text-bitwin-primary font-bold ml-2 uppercase tracking-wide">Seu Nickname & Avatar</label>
-      <div className="flex gap-2 lg:gap-3">
-          <input
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value.slice(0, 15))}
-            placeholder="EX: GORBINAL"
-            className="flex-1 bg-bitwin-bg/50 border-4 border-white/20 focus:border-bitwin-primary text-white text-xl lg:text-3xl font-bold p-4 lg:p-4 rounded-2xl outline-none transition-all placeholder-white/20 text-center uppercase"
-            autoFocus
-          />
-          <button 
-            className="w-20 lg:w-24 bg-bitwin-bg/50 border-4 border-white/20 hover:border-bitwin-primary rounded-2xl text-4xl lg:text-5xl flex items-center justify-center transition-all active:scale-95 shadow-lg"
-            onClick={() => setShowAvatarSelector(!showAvatarSelector)}
-          >
-            {playerAvatar}
-          </button>
-      </div>
-
-      {showAvatarSelector && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-bitwin-bg border-4 border-bitwin-primary rounded-3xl p-4 lg:p-4 shadow-2xl z-50 animate-pop-in grid grid-cols-5 gap-2 lg:gap-2">
-              {AVATARS.map(av => (
-                  <button
-                    key={av}
-                    onClick={() => { setPlayerAvatar(av); setShowAvatarSelector(false); }}
-                    className={`text-3xl lg:text-4xl p-2 rounded-xl hover:bg-white/10 transition-colors ${playerAvatar === av ? 'bg-white/20 ring-4 ring-bitwin-primary' : ''}`}
-                  >
-                      {av}
-                  </button>
-              ))}
+  const LogoSection = () => (
+      <div className="relative z-10 flex flex-col items-center mb-8 transform hover:scale-105 transition-transform duration-500">
+          {/* Logo without the stroke class, relying on global CSS drop-shadows */}
+          <h1 className="text-7xl md:text-8xl logo-3d tracking-wide text-center leading-none">
+              BITWIN
+          </h1>
+          <div className="bg-bitwin-cta border border-white/30 shadow-glow-pink px-4 py-1 rounded-full -mt-2 transform -rotate-2 relative z-20">
+              <span className="text-white font-black text-[10px] md:text-sm uppercase tracking-widest drop-shadow-md">
+                  Quem chuta melhor?
+              </span>
           </div>
-      )}
-
-      <div className="text-right text-xs lg:text-sm font-bold text-white/40">{playerName.length}/15</div>
-    </div>
+      </div>
   );
 
   return (
-    <div className="flex flex-row h-[100dvh] lg:min-h-screen lg:items-center lg:justify-between bg-bitwin-bg overflow-hidden lg:overflow-visible text-center">
+    <div className="bg-cosmic min-h-[100dvh] flex flex-col items-center relative overflow-hidden font-sans">
       
-      {/* --- DESKTOP LEFT AD (Skyscraper) --- */}
-      <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none sticky top-0 h-screen p-4 z-0">
-          <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group">
-             <img 
-               src="https://placehold.co/160x600/2e003e/ffcc00?text=LOBBY+AD+L" 
-               alt="Advertisement Left" 
-               className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
+      {/* Background stars are now handled by body/bg-cosmic CSS in index.html */}
+
+      {/* --- SECRET AD MANAGER --- */}
+      {showAdManager && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4">
+          <div className="glass-panel w-full max-w-2xl p-6">
+             <h2 className="text-2xl font-mono font-black text-green-400 mb-4">ADMIN ADS</h2>
+             <textarea 
+                className="w-full h-64 bg-black/50 border border-white/20 text-green-400 font-mono text-xs p-4 rounded-xl outline-none"
+                value={adCode}
+                onChange={(e) => setAdCode(e.target.value)}
              />
+             <div className="flex gap-4 mt-4">
+                <Button variant="outline" onClick={() => setShowAdManager(false)}>CANCELAR</Button>
+                <button onClick={saveAdCode} className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-8 rounded-xl">SALVAR</button>
+             </div>
           </div>
-      </div>
+        </div>
+      )}
 
-      {/* --- CENTER CONTENT --- */}
-      <div className="flex-1 flex flex-col items-center justify-start lg:justify-center h-full w-full relative z-10 p-4 pt-8 lg:p-4 overflow-y-auto custom-scrollbar">
+      {/* --- MAIN CONTENT --- */}
+      <div className="relative z-10 w-full max-w-md px-6 flex flex-col h-full justify-center min-h-[100dvh] py-8">
         
-        {/* Logo Area - Scaled up for mobile */}
-        <div className="mb-8 lg:mb-8 transform rotate-[-2deg] flex-none">
-          <h1 className="text-7xl md:text-8xl lg:text-8xl font-black text-bitwin-primary drop-shadow-[0_4px_0_#b38f00] lg:drop-shadow-[0_6px_0_#b38f00] stroke-black leading-none" style={{ WebkitTextStroke: '2px #2e003e' }}>
-            BITWIN
-          </h1>
-          <div className="bg-bitwin-secondary text-white font-bold text-base lg:text-xl px-5 py-2 lg:px-5 lg:py-1 rounded-full inline-block transform rotate-[4deg] -mt-4 lg:-mt-4 border-2 lg:border-4 border-white/20 shadow-xl">
-            QUEM CHUTA MELHOR?
-          </div>
-        </div>
+        <LogoSection />
 
-        <div className="w-full max-w-lg lg:max-w-xl bg-bitwin-card border-4 lg:border-8 border-white/10 p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] shadow-2xl relative flex-none mb-auto lg:mb-0">
-          
-          {/* Step 1: Menu */}
-          {mode === 'menu' && (
-            <div className="space-y-6 lg:space-y-6 animate-pop-in">
-              <NameInput />
-              <div className="pt-2 lg:pt-4 space-y-3 lg:space-y-4">
-                  <Button 
-                      onClick={() => setMode('create')} 
-                      disabled={!playerName}
-                      variant="primary" 
-                      size="lg" 
-                      className="w-full text-xl lg:text-2xl py-4 lg:py-4 shadow-xl"
-                  >
-                  CRIAR SALA
-                  </Button>
-                  <div className="flex items-center gap-4 opacity-50">
-                      <div className="h-1 flex-1 bg-white/20 rounded-full"></div>
-                      <span className="font-black text-lg lg:text-xl">OU</span>
-                      <div className="h-1 flex-1 bg-white/20 rounded-full"></div>
-                  </div>
-                  <Button 
-                      onClick={() => setMode('join')} 
-                      disabled={!playerName}
-                      variant="secondary" 
-                      size="lg" 
-                      className="w-full text-xl lg:text-2xl py-4 lg:py-4 shadow-xl"
-                  >
-                  ENTRAR
-                  </Button>
-              </div>
+        {/* --- GLASS CONTAINER --- */}
+        <div className="glass-panel p-1 w-full animate-pop-in relative overflow-visible">
+            {/* Inner Border Container */}
+            <div className="bg-[#240046]/40 rounded-[28px] p-6 lg:p-8 border border-white/5 shadow-inner-highlight flex flex-col items-center gap-6">
+
+                {mode === 'menu' && (
+                    <>
+                        <div className="w-full text-center">
+                             <p className="text-white/60 text-sm font-bold uppercase tracking-widest">Digite seu Nickname</p>
+                        </div>
+                        
+                        {/* SIDE-BY-SIDE LAYOUT: Avatar + Input */}
+                        <div className="flex flex-row items-center gap-4 w-full">
+                            
+                            {/* Avatar (Left) */}
+                            <div className="relative shrink-0">
+                                <button 
+                                    onClick={() => setShowAvatarSelector(!showAvatarSelector)}
+                                    className="w-16 h-16 rounded-full bg-gradient-to-b from-[#4cc9f0] to-[#4361ee] p-0.5 shadow-lg border-2 border-white/30 hover:scale-105 transition-transform"
+                                >
+                                    <div className="w-full h-full bg-black/10 rounded-full flex items-center justify-center text-3xl shadow-inner backdrop-blur-sm">
+                                        {playerAvatar}
+                                    </div>
+                                </button>
+                                {/* Edit Icon */}
+                                <div className="absolute bottom-0 right-0 bg-white text-[#240046] rounded-full p-1 shadow-md pointer-events-none">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                    </svg>
+                                </div>
+
+                                {/* Avatar Popover */}
+                                {showAvatarSelector && (
+                                    <div className="absolute top-full left-0 mt-3 w-64 bg-[#3c096c] border-2 border-white/20 rounded-xl p-3 grid grid-cols-4 gap-2 shadow-2xl z-50 animate-pop-in">
+                                        {AVATARS.map(av => (
+                                            <button
+                                                key={av}
+                                                onClick={() => { setPlayerAvatar(av); setShowAvatarSelector(false); }}
+                                                className={`text-2xl p-2 rounded-lg hover:bg-white/10 transition-colors ${playerAvatar === av ? 'bg-white/20' : ''}`}
+                                            >
+                                                {av}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Input (Right) */}
+                            <input
+                                type="text"
+                                value={playerName}
+                                onChange={(e) => setPlayerName(e.target.value.slice(0, 15))}
+                                className="w-full h-14 bg-[#10002b]/60 border-2 border-[#3c096c] focus:border-bitwin-primary rounded-2xl px-4 text-center text-white text-xl font-bold placeholder-white/20 outline-none transition-all shadow-inner"
+                                placeholder="Seu Nome"
+                            />
+
+                        </div>
+
+                        {/* Buttons */}
+                        <div className="w-full flex flex-col gap-3 mt-2">
+                            <Button 
+                                onClick={() => setMode('create')} 
+                                disabled={!playerName}
+                                variant="primary"
+                                size="lg"
+                                className={`w-full ${!playerName ? 'opacity-50 grayscale' : ''}`}
+                            >
+                                CRIAR SALA
+                            </Button>
+
+                            <Button 
+                                onClick={() => setMode('join')} 
+                                disabled={!playerName}
+                                variant="cta"
+                                size="lg"
+                                className={`w-full ${!playerName ? 'opacity-50 grayscale' : ''}`}
+                            >
+                                ENTRAR
+                            </Button>
+                        </div>
+                    </>
+                )}
+
+                {mode === 'create' && (
+                    <div className="w-full flex flex-col items-center gap-4 animate-pop-in">
+                        <h2 className="text-xl font-black text-white uppercase drop-shadow-md">Escolha o Modo</h2>
+                        <div className="grid grid-cols-2 gap-3 w-full">
+                             <button 
+                                onClick={() => setSelectedGameMode('CLASSIC')}
+                                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 relative overflow-hidden group ${selectedGameMode === 'CLASSIC' ? 'bg-bitwin-primary/20 border-bitwin-primary shadow-glow-gold' : 'bg-black/20 border-white/10 opacity-70'}`}
+                            >
+                                <span className="text-3xl">🛡️</span>
+                                <span className="font-bold text-xs uppercase text-white">Clássico</span>
+                            </button>
+                            <button 
+                                onClick={() => setSelectedGameMode('HACKER')}
+                                className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 relative overflow-hidden group ${selectedGameMode === 'HACKER' ? 'bg-bitwin-cta/20 border-bitwin-cta shadow-glow-pink' : 'bg-black/20 border-white/10 opacity-70'}`}
+                            >
+                                <span className="text-3xl">⚡</span>
+                                <span className="font-bold text-xs uppercase text-white">Hacker</span>
+                            </button>
+                        </div>
+                        <Button onClick={handleCreate} variant="primary" className="w-full mt-2">INICIAR</Button>
+                        <button onClick={() => setMode('menu')} className="text-white/40 font-bold text-xs uppercase hover:text-white mt-2">Voltar</button>
+                    </div>
+                )}
+
+                {mode === 'join' && (
+                    <div className="w-full flex flex-col items-center gap-4 animate-pop-in">
+                        <h2 className="text-xl font-black text-white uppercase drop-shadow-md">Código da Sala</h2>
+                        <input
+                            type="text"
+                            value={joinCode}
+                            onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 5))}
+                            placeholder="A1B2C"
+                            className="w-full bg-[#10002b]/60 border-2 border-bitwin-cta focus:shadow-glow-pink rounded-xl py-4 text-center text-4xl font-brand font-black text-white tracking-[0.2em] uppercase outline-none"
+                            autoFocus
+                        />
+                        <Button 
+                            onClick={handleJoin} 
+                            disabled={joinCode.length !== 5}
+                            variant="cta"
+                            className="w-full mt-2"
+                        >
+                            ENTRAR NA SALA
+                        </Button>
+                        <button onClick={() => setMode('menu')} className="text-white/40 font-bold text-xs uppercase hover:text-white mt-2">Voltar</button>
+                    </div>
+                )}
+
             </div>
-          )}
-
-          {/* Step 2: Create (Mode Selection) */}
-          {mode === 'create' && (
-            <div className="space-y-6 lg:space-y-6 animate-pop-in">
-              <div className="text-2xl lg:text-4xl font-black mb-2 lg:mb-2">Olá, {playerName}!</div>
-              <p className="text-white/60 mb-4 lg:mb-4 text-base lg:text-lg font-bold">Escolha o modo de jogo:</p>
-              
-              <div className="grid grid-cols-2 gap-4 lg:gap-4">
-                  <button 
-                      onClick={() => setSelectedGameMode('CLASSIC')}
-                      className={`p-4 lg:p-4 rounded-[2rem] border-4 transition-all duration-300 flex flex-col items-center gap-2 lg:gap-2 ${selectedGameMode === 'CLASSIC' ? 'bg-white/10 border-bitwin-primary scale-105 shadow-2xl' : 'bg-black/20 border-white/10 opacity-60 hover:opacity-100'}`}
-                  >
-                      <div className="text-5xl lg:text-6xl">🛡️</div>
-                      <div className="font-black text-lg lg:text-xl">CLÁSSICO</div>
-                      <div className="text-[10px] lg:text-xs text-white/50 leading-tight">Lógica pura.<br/>Sem poderes.</div>
-                  </button>
-
-                  <button 
-                      onClick={() => setSelectedGameMode('HACKER')}
-                      className={`p-4 lg:p-4 rounded-[2rem] border-4 transition-all duration-300 flex flex-col items-center gap-2 lg:gap-2 ${selectedGameMode === 'HACKER' ? 'bg-white/10 border-bitwin-accent scale-105 shadow-2xl' : 'bg-black/20 border-white/10 opacity-60 hover:opacity-100'}`}
-                  >
-                      <div className="text-5xl lg:text-6xl">⚡</div>
-                      <div className="font-black text-lg lg:text-xl">HACKER</div>
-                      <div className="text-[10px] lg:text-xs text-white/50 leading-tight">Com poderes<br/>e caos! (Beta)</div>
-                  </button>
-              </div>
-
-              <div className="pt-2 lg:pt-4">
-                  <Button onClick={handleCreate} variant="primary" size="lg" className="w-full text-xl lg:text-2xl py-4 lg:py-4 shadow-xl">
-                  INICIAR LOBBY
-                  </Button>
-              </div>
-              
-              <button onClick={() => setMode('menu')} className="text-white/40 font-black text-base lg:text-base mt-2 hover:text-white uppercase tracking-widest">VOLTAR</button>
-            </div>
-          )}
-
-          {/* Step 3: Join */}
-          {mode === 'join' && (
-            <div className="space-y-6 lg:space-y-6 animate-pop-in">
-              <div className="space-y-3 lg:space-y-4 text-left">
-                <label className="text-base lg:text-lg text-bitwin-accent font-bold ml-2">CÓDIGO DA SALA</label>
-                <input
-                  type="text"
-                  value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 5))}
-                  placeholder="A1B2C"
-                  className="w-full bg-bitwin-bg/50 border-4 border-white/20 focus:border-bitwin-accent text-white text-center text-5xl lg:text-6xl font-black p-4 lg:p-4 rounded-3xl outline-none transition-all placeholder-white/20 tracking-widest uppercase"
-                  autoFocus
-                />
-              </div>
-              <Button 
-                onClick={handleJoin} 
-                disabled={joinCode.length !== 5} 
-                variant="secondary" 
-                size="lg" 
-                className="w-full text-xl lg:text-2xl py-4 lg:py-4 shadow-xl"
-              >
-                ENTRAR NA SALA
-              </Button>
-              <button onClick={() => setMode('menu')} className="text-white/40 font-black text-base lg:text-base mt-2 hover:text-white uppercase tracking-widest">VOLTAR</button>
-            </div>
-          )}
-
-        </div>
-        
-        <div className="mt-4 lg:mt-4 text-white/10 text-xs lg:text-sm font-bold font-mono flex-none">
-          v2.13
         </div>
 
-        {/* --- MOBILE BOTTOM AD (Banner) --- */}
-        <div className="lg:hidden flex-none w-full h-[60px] mt-4 flex items-center justify-center">
-            <img 
-               src="https://placehold.co/320x50/2e003e/ffcc00?text=MOBILE+LOBBY+AD" 
-               alt="Mobile Ad" 
-               className="h-full object-contain opacity-80"
-            />
+        {/* Footer */}
+        <div 
+          onClick={handleVersionClick}
+          className="mt-6 text-white/20 text-xs font-bold font-mono text-center cursor-pointer hover:text-white/50"
+        >
+          v2.13 {versionClickCount > 0 && versionClickCount < 10 && `(${10 - versionClickCount})`}
         </div>
 
-      </div>
-
-      {/* --- DESKTOP RIGHT AD (Skyscraper) --- */}
-      <div className="hidden lg:flex flex-col justify-center items-center w-[180px] flex-none sticky top-0 h-screen p-4 z-0">
-          <div className="w-[160px] h-[600px] bg-black/20 border-2 border-white/5 rounded-xl overflow-hidden shadow-2xl flex items-center justify-center group">
-             <img 
-               src="https://placehold.co/160x600/2e003e/ff0066?text=LOBBY+AD+R" 
-               alt="Advertisement Right" 
-               className="w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
-             />
-          </div>
+        <div className="mt-auto pt-4 w-full flex justify-center pb-safe">
+             <div className="bg-black/30 border border-white/10 rounded-lg w-full h-[50px] flex items-center justify-center">
+                 <span className="text-white/20 text-[10px] font-bold tracking-widest uppercase">Advertisement</span>
+             </div>
+        </div>
       </div>
 
     </div>

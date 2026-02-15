@@ -32,6 +32,32 @@ export default function App() {
   const gameStateRef = useRef<GameState>(GameState.LOBBY);
   const gameConfigRef = useRef<GameConfig | null>(null);
 
+  // --- AD INJECTION ---
+  useEffect(() => {
+    try {
+        const adCode = localStorage.getItem('BITWIN_AD_CODE');
+        if (adCode) {
+            console.log("Injecting Ads...");
+            // Extract script src if it's a script tag, or creates a generic script element
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = adCode;
+            
+            const scripts = tempDiv.getElementsByTagName('script');
+            for (let i = 0; i < scripts.length; i++) {
+                const script = document.createElement('script');
+                if (scripts[i].src) script.src = scripts[i].src;
+                if (scripts[i].innerHTML) script.innerHTML = scripts[i].innerHTML;
+                if (scripts[i].async) script.async = true;
+                if (scripts[i].crossOrigin) script.crossOrigin = scripts[i].crossOrigin;
+                document.head.appendChild(script);
+            }
+        }
+    } catch (e) {
+        console.error("Failed to inject ads", e);
+    }
+  }, []);
+
+
   // Update ref when state changes
   useEffect(() => {
     gameStateRef.current = gameState;
@@ -377,6 +403,7 @@ export default function App() {
         incomingRematchFrom={incomingRematchRequest}
         myPlayerName={myPlayerName}
         myAvatar={myAvatar}
+        opponentName={myPlayerName === gameConfig.hostName ? gameConfig.joinerName : gameConfig.hostName}
         opponentAvatar={myPlayerName === gameConfig.hostName ? gameConfig.joinerAvatar : gameConfig.hostAvatar}
       />
     );

@@ -11,54 +11,170 @@
           extend: {
             colors: {
               bitwin: {
-                bg: '#2e003e',       /* Deep Purple Background */
-                card: '#4a0e4e',     /* Lighter Purple Card */
-                primary: '#ffcc00',  /* Bright Yellow */
-                primaryDark: '#e6b800',
-                secondary: '#ff0066',/* Hot Pink/Red */
-                accent: '#00ff99',   /* Bright Green */
+                bg: '#240046',       /* Deepest Purple */
+                bg2: '#3c096c',      /* Mid Purple */
+                card: '#5a189a',     /* Lighter Purple */
+                primary: '#ff9e00',  /* Golden Orange */
+                primaryLight: '#ffc300', /* Yellow */
+                cta: '#ff006e',      /* Hot Pink */
+                ctaLight: '#ff549f', /* Light Pink */
+                success: '#38b000',  /* Grass Green */
+                error: '#d00000',    /* Deep Red */
                 text: '#ffffff',
+                glass: 'rgba(36, 0, 70, 0.6)',
               }
             },
             fontFamily: {
               sans: ['Fredoka', 'sans-serif'],
+              brand: ['Titan One', 'cursive'],
             },
             animation: {
               'bounce-slight': 'bounce 2s infinite',
               'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              'arrow-up': 'bounceUp 1s infinite',
-              'arrow-down': 'bounceDown 1s infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'float-delayed': 'float 6s ease-in-out 3s infinite',
+              'shine': 'shine 3s infinite',
+              'stars': 'starMove 100s linear infinite',
+              'stars-fast': 'starMove 50s linear infinite',
             },
             keyframes: {
               popIn: {
                 '0%': { transform: 'scale(0.8)', opacity: '0' },
                 '100%': { transform: 'scale(1)', opacity: '1' },
               },
-              bounceUp: {
+              float: {
                 '0%, 100%': { transform: 'translateY(0)' },
                 '50%': { transform: 'translateY(-15px)' },
               },
-              bounceDown: {
-                '0%, 100%': { transform: 'translateY(0)' },
-                '50%': { transform: 'translateY(15px)' },
+              shine: {
+                '0%': { transform: 'translateX(-100%) skewX(-15deg)' },
+                '100%': { transform: 'translateX(200%) skewX(-15deg)' },
+              },
+              starMove: {
+                '0%': { backgroundPosition: '0 0' },
+                '100%': { backgroundPosition: '0 1000px' },
               }
+            },
+            boxShadow: {
+              'glow-gold': '0 0 20px rgba(255, 195, 0, 0.5)',
+              'glow-pink': '0 0 20px rgba(255, 0, 110, 0.5)',
+              'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+              'inner-highlight': 'inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -4px 0 rgba(0,0,0,0.2)',
             }
           },
         },
       }
     </script>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700;900&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Titan+One&display=swap');
       
       body {
         font-family: 'Fredoka', sans-serif;
-        background-color: #2e003e;
+        background-color: #10002b;
         color: white;
-        background-image: radial-gradient(circle at 50% 0%, #581c63 0%, #2e003e 70%);
         min-height: 100vh;
-        overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile */
+        overscroll-behavior-y: none;
+        overflow-x: hidden;
+      }
+
+      /* Cosmic Background with Flying Stars */
+      .bg-cosmic {
+        background: radial-gradient(circle at center, #3c096c 0%, #240046 60%, #10002b 100%);
+        position: relative;
+        z-index: 0;
+        overflow: hidden;
       }
       
+      /* Stars Layer 1 (Small & Slow) */
+      .bg-cosmic::before {
+        content: "";
+        position: fixed;
+        top: -1000px; left: 0; right: 0; bottom: 0;
+        background-image: 
+          radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+          radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+        background-size: 200px 200px;
+        animation: starMove 60s linear infinite;
+        opacity: 0.6;
+        z-index: -2;
+        pointer-events: none;
+        width: 100%;
+        height: 200%;
+      }
+
+      /* Stars Layer 2 (Bigger & Faster) */
+      .bg-cosmic::after {
+        content: "";
+        position: fixed;
+        top: -1000px; left: 0; right: 0; bottom: 0;
+        background-image: 
+          radial-gradient(3px 3px at 50px 100px, #ffffff, rgba(0,0,0,0)),
+          radial-gradient(3px 3px at 150px 200px, #a0c4ff, rgba(0,0,0,0)),
+          radial-gradient(3px 3px at 250px 50px, #ffffff, rgba(0,0,0,0));
+        background-size: 350px 350px;
+        animation: starMove 30s linear infinite;
+        opacity: 0.4;
+        z-index: -1;
+        pointer-events: none;
+        width: 100%;
+        height: 200%;
+      }
+
+      /* Logo Font */
+      .font-brand {
+        font-family: 'Titan One', cursive;
+      }
+
+      /* 3D Logo Effect - Updated (No Stroke, cleaner glow) */
+      .logo-3d {
+        font-family: 'Titan One', cursive;
+        background: linear-gradient(180deg, #FFEA00 20%, #FF9E00 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        /* Replaced stroke simulation with drop shadows for depth without the black outline */
+        filter: drop-shadow(0px 4px 0px #b45309) drop-shadow(0px 0px 15px rgba(255, 158, 0, 0.6));
+        position: relative;
+        z-index: 2;
+      }
+      
+      /* Glass Panel Container */
+      .glass-panel {
+        background: linear-gradient(180deg, rgba(80, 20, 120, 0.5) 0%, rgba(40, 0, 80, 0.6) 100%);
+        box-shadow: 
+            0 10px 40px 0 rgba(0, 0, 0, 0.6),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15),
+            inset 0 0 20px rgba(100, 0, 200, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      
+      /* Glossy Button Base */
+      .btn-glossy {
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.1s, filter 0.2s;
+          box-shadow: 0 6px 0 rgba(0,0,0,0.3), 0 10px 10px rgba(0,0,0,0.2);
+      }
+      .btn-glossy:active {
+          transform: translateY(4px);
+          box-shadow: 0 2px 0 rgba(0,0,0,0.3), 0 4px 4px rgba(0,0,0,0.2);
+      }
+      /* Shine overlay for buttons */
+      .btn-glossy::after {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; right: 0; height: 45%;
+          background: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.1) 100%);
+          border-radius: 99px 99px 20px 20px;
+          pointer-events: none;
+      }
+
       /* Custom scrollbar */
       ::-webkit-scrollbar {
         width: 6px;
@@ -68,63 +184,14 @@
         border-radius: 5px;
       }
       ::-webkit-scrollbar-thumb {
-        background: #ffcc00; 
+        background: #5a189a; 
         border-radius: 5px;
       }
       
-      /* Hide Input Spinners (Arrows) */
-      .no-spinner::-webkit-inner-spin-button,
-      .no-spinner::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-      }
-      .no-spinner {
-        -moz-appearance: textfield;
-      }
-      
-      /* Power-up Effects */
-      @keyframes glitch-anim {
-        0% { transform: translate(0) }
-        20% { transform: translate(-2px, 2px) }
-        40% { transform: translate(-2px, -2px) }
-        60% { transform: translate(2px, 2px) }
-        80% { transform: translate(2px, -2px) }
-        100% { transform: translate(0) }
-      }
-
       .glitch-effect {
         animation: glitch-anim 0.2s infinite;
         filter: hue-rotate(90deg) contrast(1.2);
       }
-
-      .glitch-effect input {
-         transform: scaleY(-1); /* Upside down input */
-      }
-      
-      .glitch-effect .arrow-indicator {
-          transform: rotate(180deg); /* Wrong directions */
-      }
-
-      .freeze-effect {
-        position: relative;
-        overflow: hidden;
-      }
-      .freeze-effect::after {
-        content: "❄️ CONGELADO ❄️";
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 200, 255, 0.4);
-        backdrop-filter: blur(4px);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem;
-        font-weight: bold;
-        color: white;
-        text-shadow: 0 0 10px blue;
-        z-index: 50;
-      }
-
     </style>
   <script type="importmap">
 {
